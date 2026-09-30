@@ -3,6 +3,7 @@ import type { Field, FieldOperation, Expense, YieldRecord, CropRotation } from '
 import { Modal } from '../common/Modal';
 import { Badge } from '../common/Badge';
 import { ClipboardList, RotateCw } from 'lucide-react';
+import { formatINR, cleanNumber } from '../../utils/currency';
 
 interface FieldDetailModalProps {
   isOpen: boolean;
@@ -30,9 +31,19 @@ export const FieldDetailModal: React.FC<FieldDetailModalProps> = ({
   const fieldYields = yields.filter((y) => y.fieldId === field.id);
   const fieldRotations = rotations.filter((r) => r.fieldId === field.id);
 
-  const totalExpense = fieldExpenses.reduce((sum, e) => sum + (e.amountInr || 0), 0);
-  const totalRevenue = fieldYields.reduce((sum, y) => sum + (y.totalRevenueInr || 0), 0);
-  const netProfit = totalRevenue - totalExpense;
+  const totalExpense = Number(
+    fieldExpenses.reduce((sum, e) => sum + cleanNumber(e.amount ?? e.amountInr), 0).toFixed(2)
+  );
+  const totalRevenue = Number(
+    fieldYields.reduce((sum, y) => {
+      const qty = cleanNumber(y.quantity ?? y.quantityQuintals);
+      const price = cleanNumber(y.sellingPrice ?? y.pricePerQuintalInr);
+      const rev = (qty > 0 && price > 0) ? (qty * price) : cleanNumber(y.totalRevenueInr);
+      return sum + rev;
+    }, 0).toFixed(2)
+  );
+  const netProfit = Number((totalRevenue - totalExpense).toFixed(2));
+  const isProfit = netProfit >= 0;
 
   return (
     <Modal
@@ -86,19 +97,19 @@ export const FieldDetailModal: React.FC<FieldDetailModalProps> = ({
           <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-center min-w-0">
             <span className="text-[11px] font-bold text-amber-900 uppercase block truncate">Field Expenses</span>
             <div className="text-base md:text-lg font-black text-amber-950 mt-0.5 truncate font-mono tabular-nums">
-              ₹{totalExpense.toLocaleString('en-IN')}
+              {formatINR(totalExpense)}
             </div>
           </div>
           <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-center min-w-0">
             <span className="text-[11px] font-bold text-[#1b4332] uppercase block truncate">Harvest Revenue</span>
             <div className="text-base md:text-lg font-black text-[#1b4332] mt-0.5 truncate font-mono tabular-nums">
-              ₹{totalRevenue.toLocaleString('en-IN')}
+              {formatINR(totalRevenue)}
             </div>
           </div>
-          <div className="p-3 rounded-2xl bg-[#d8f3dc] border border-[#74c69d] text-center min-w-0">
+          <div className={`p-3 rounded-2xl border text-center min-w-0 ${isProfit ? 'bg-[#d8f3dc] border-[#74c69d]' : 'bg-red-50 border-red-200'}`}>
             <span className="text-[11px] font-bold text-[#1b4332] uppercase block truncate">Net Profit</span>
-            <div className="text-base md:text-lg font-black text-[#1b4332] mt-0.5 truncate font-mono tabular-nums">
-              ₹{netProfit.toLocaleString('en-IN')}
+            <div className={`text-base md:text-lg font-black mt-0.5 truncate font-mono tabular-nums ${isProfit ? 'text-[#1b4332]' : 'text-red-700'}`}>
+              {formatINR(netProfit)}
             </div>
           </div>
         </div>

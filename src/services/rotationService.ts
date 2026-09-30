@@ -1,5 +1,6 @@
 import { db } from '../db';
 import type { CropRotation, SoilType } from '../types';
+import { authService } from './authService';
 
 export interface RotationRecommendation {
   recommendedCropName: string;
@@ -11,7 +12,7 @@ export interface RotationRecommendation {
 }
 
 export interface IRotationService {
-  getAllRotations(): Promise<CropRotation[]>;
+  getAllRotations(userId?: number): Promise<CropRotation[]>;
   getRotationsByField(fieldId: number): Promise<CropRotation[]>;
   addRotation(rotation: Omit<CropRotation, 'id' | 'createdAt'>): Promise<number>;
   updateRotation(id: number, rotation: Partial<CropRotation>): Promise<void>;
@@ -20,7 +21,13 @@ export interface IRotationService {
 }
 
 export class IndexedDBRotationService implements IRotationService {
-  async getAllRotations(): Promise<CropRotation[]> {
+  async getAllRotations(userId?: number): Promise<CropRotation[]> {
+    const targetUserId = userId ?? authService.getCurrentUserId();
+    if (targetUserId) {
+      return await db.cropRotations
+        .filter((r) => r.userId === targetUserId || (!r.userId && targetUserId === 1))
+        .toArray();
+    }
     return await db.cropRotations.toArray();
   }
 
@@ -29,8 +36,10 @@ export class IndexedDBRotationService implements IRotationService {
   }
 
   async addRotation(rotation: Omit<CropRotation, 'id' | 'createdAt'>): Promise<number> {
+    const userId = rotation.userId ?? authService.getCurrentUserId() ?? 1;
     const newRotation: Omit<CropRotation, 'id'> = {
       ...rotation,
+      userId,
       createdAt: new Date().toISOString()
     };
     return await db.cropRotations.add(newRotation as CropRotation);

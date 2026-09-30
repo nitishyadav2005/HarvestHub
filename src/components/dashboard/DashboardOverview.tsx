@@ -11,7 +11,8 @@ import { FinancialSummaryWidget } from './FinancialSummaryWidget';
 import { EquipmentMaintenanceWidget } from './EquipmentMaintenanceWidget';
 import { ClayCard } from '../common/ClayCard';
 import { Badge } from '../common/Badge';
-import { Sprout, LandPlot, AlertCircle, ArrowUpRight, Plus, Calendar } from 'lucide-react';
+import { Sprout, LandPlot, AlertCircle, TrendingUp, TrendingDown, Plus, Scale, IndianRupee, Wallet, Calendar, ArrowUpRight } from 'lucide-react';
+import { formatINR } from '../../utils/currency';
 
 interface DashboardOverviewProps {
   fields: Field[];
@@ -42,82 +43,145 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   const activeFields = fields.filter((f) => f.status === 'Active');
   const activeCropsCount = new Set(fields.map((f) => f.currentCropName).filter(Boolean)).size;
   const pendingOpsCount = operations.filter((op) => op.status !== 'Completed').length;
+  const isProfit = (financialSummary.netProfitInr ?? 0) >= 0;
 
   return (
     <div className="space-y-6 animate-fadeIn pb-6">
-      {/* Top Stat Summary Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      {/* 4 Dashboard Financial Cards (Requirement 7) */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
+            <IndianRupee className="w-3.5 h-3.5 text-[#2d6a4f]" /> Live Farm Financials (IndexedDB)
+          </span>
+          <button
+            onClick={() => onNavigate('finances')}
+            className="text-[11px] font-semibold text-[#2d6a4f] hover:underline cursor-pointer"
+          >
+            View Cost & Yield →
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          {/* Card 1: Total Expenses = SUM(expenses.amount) */}
+          <ClayCard variant="white" className="border border-emerald-100 p-3 sm:p-4">
+            <div className="flex items-center justify-between gap-1.5">
+              <span className="text-[11px] sm:text-xs font-bold text-amber-900 uppercase tracking-wider truncate">
+                Total Expenses
+              </span>
+              <div className="p-1.5 sm:p-2 rounded-xl bg-amber-100 text-amber-900 shrink-0">
+                <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              </div>
+            </div>
+            <div className="text-lg sm:text-xl md:text-2xl font-black text-amber-950 mt-1.5 sm:mt-2 truncate font-mono tabular-nums">
+              {formatINR(financialSummary.totalExpensesInr)}
+            </div>
+            <p className="text-[10px] sm:text-[11px] text-amber-800 mt-1 font-medium truncate">
+              SUM(expenses.amount)
+            </p>
+          </ClayCard>
+
+          {/* Card 2: Total Revenue = SUM(yields.quantity × yields.sellingPrice) */}
+          <ClayCard variant="white" className="border border-emerald-100 p-3 sm:p-4">
+            <div className="flex items-center justify-between gap-1.5">
+              <span className="text-[11px] sm:text-xs font-bold text-[#1b4332] uppercase tracking-wider truncate">
+                Total Revenue
+              </span>
+              <div className="p-1.5 sm:p-2 rounded-xl bg-[#d8f3dc] text-[#1b4332] shrink-0">
+                <IndianRupee className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              </div>
+            </div>
+            <div className="text-lg sm:text-xl md:text-2xl font-black text-[#1b4332] mt-1.5 sm:mt-2 truncate font-mono tabular-nums">
+              {formatINR(financialSummary.totalRevenueInr)}
+            </div>
+            <p className="text-[10px] sm:text-[11px] text-emerald-700 mt-1 font-medium truncate">
+              SUM(yields.quantity × price)
+            </p>
+          </ClayCard>
+
+          {/* Card 3: Net Profit = Total Revenue - Total Expenses */}
+          <ClayCard variant="white" className="border border-emerald-100 p-3 sm:p-4">
+            <div className="flex items-center justify-between gap-1.5">
+              <span className="text-[11px] sm:text-xs font-bold text-[#1b4332] uppercase tracking-wider truncate">
+                Net Profit
+              </span>
+              <div className={`p-1.5 sm:p-2 rounded-xl ${isProfit ? 'bg-[#d8f3dc] text-[#1b4332]' : 'bg-red-100 text-red-700'} shrink-0`}>
+                {isProfit ? <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <TrendingDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+              </div>
+            </div>
+            <div className={`text-lg sm:text-xl md:text-2xl font-black mt-1.5 sm:mt-2 truncate font-mono tabular-nums ${isProfit ? 'text-[#1b4332]' : 'text-red-700'}`}>
+              {formatINR(financialSummary.netProfitInr)}
+            </div>
+            <p className="text-[10px] sm:text-[11px] text-emerald-700 mt-1 font-medium truncate">
+              Revenue - Expenses (ROI {financialSummary.roiPercentage}%)
+            </p>
+          </ClayCard>
+
+          {/* Card 4: Total Yield = SUM(yields.quantity) */}
+          <ClayCard variant="white" className="border border-emerald-100 p-3 sm:p-4">
+            <div className="flex items-center justify-between gap-1.5">
+              <span className="text-[11px] sm:text-xs font-bold text-emerald-900 uppercase tracking-wider truncate">
+                Total Yield
+              </span>
+              <div className="p-1.5 sm:p-2 rounded-xl bg-emerald-100 text-emerald-800 shrink-0">
+                <Scale className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              </div>
+            </div>
+            <div className="text-base sm:text-lg md:text-xl font-black text-[#1b4332] mt-1.5 sm:mt-2 truncate font-mono tabular-nums">
+              {financialSummary.totalYieldFormatted || '0 kg'}
+            </div>
+            <p className="text-[10px] sm:text-[11px] text-emerald-700 mt-1 font-medium truncate">
+              SUM(yields.quantity)
+            </p>
+          </ClayCard>
+        </div>
+      </div>
+
+      {/* Farm Operational Metrics Row */}
+      <div className="grid grid-cols-3 gap-3 sm:gap-4">
         {/* Total Land */}
-        <ClayCard variant="white" className="border border-emerald-100 p-3 sm:p-4">
-          <div className="flex items-center justify-between gap-1.5">
-            <span className="text-[11px] sm:text-xs font-bold text-emerald-800 uppercase tracking-wider truncate">
-              Total Land Area
+        <div className="clay-card p-3 rounded-2xl border border-emerald-100/90 flex items-center justify-between gap-2">
+          <div className="min-w-0">
+            <span className="text-[10px] sm:text-xs font-bold text-emerald-800 uppercase tracking-wider block truncate">
+              Registered Land
             </span>
-            <div className="p-1.5 sm:p-2 rounded-xl bg-[#d8f3dc] text-[#1b4332] shrink-0">
-              <LandPlot className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <div className="text-base sm:text-lg font-black text-[#1b4332] font-mono tabular-nums mt-0.5 truncate">
+              {totalAcreage.toFixed(1)} <span className="text-xs font-normal text-emerald-700">Acres</span>
             </div>
           </div>
-          <div className="text-xl sm:text-2xl font-black text-[#1b4332] mt-1.5 sm:mt-2 truncate font-mono tabular-nums">
-            {totalAcreage.toFixed(1)} <span className="text-xs sm:text-sm font-sans font-medium text-emerald-700">Acres</span>
+          <div className="p-1.5 rounded-xl bg-[#e8f5e9] text-[#1b4332] shrink-0 hidden sm:block">
+            <LandPlot className="w-4 h-4" />
           </div>
-          <p className="text-[10px] sm:text-[11px] text-emerald-700 mt-1 font-medium truncate">
-            Across {fields.length} registered plots
-          </p>
-        </ClayCard>
+        </div>
 
         {/* Active Crops */}
-        <ClayCard variant="white" className="border border-emerald-100 p-3 sm:p-4">
-          <div className="flex items-center justify-between gap-1.5">
-            <span className="text-[11px] sm:text-xs font-bold text-emerald-800 uppercase tracking-wider truncate">
-              Active Crops
+        <div className="clay-card p-3 rounded-2xl border border-emerald-100/90 flex items-center justify-between gap-2">
+          <div className="min-w-0">
+            <span className="text-[10px] sm:text-xs font-bold text-emerald-800 uppercase tracking-wider block truncate">
+              Active Crops ({activeFields.length} Plots)
             </span>
-            <div className="p-1.5 sm:p-2 rounded-xl bg-emerald-100 text-emerald-800 shrink-0">
-              <Sprout className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <div className="text-base sm:text-lg font-black text-[#1b4332] font-mono tabular-nums mt-0.5 truncate">
+              {activeCropsCount} <span className="text-xs font-normal text-emerald-700">Varieties</span>
             </div>
           </div>
-          <div className="text-xl sm:text-2xl font-black text-[#1b4332] mt-1.5 sm:mt-2 truncate font-mono tabular-nums">
-            {activeCropsCount} <span className="text-xs sm:text-sm font-sans font-medium text-emerald-700">Varieties</span>
+          <div className="p-1.5 rounded-xl bg-[#e8f5e9] text-[#1b4332] shrink-0 hidden sm:block">
+            <Sprout className="w-4 h-4" />
           </div>
-          <p className="text-[10px] sm:text-[11px] text-emerald-700 mt-1 font-medium truncate">
-            {activeFields.length} active plots
-          </p>
-        </ClayCard>
+        </div>
 
         {/* Pending Operations */}
-        <ClayCard variant="white" className="border border-emerald-100 p-3 sm:p-4">
-          <div className="flex items-center justify-between gap-1.5">
-            <span className="text-[11px] sm:text-xs font-bold text-amber-800 uppercase tracking-wider truncate">
+        <div className="clay-card p-3 rounded-2xl border border-emerald-100/90 flex items-center justify-between gap-2">
+          <div className="min-w-0">
+            <span className="text-[10px] sm:text-xs font-bold text-amber-900 uppercase tracking-wider block truncate">
               Pending Tasks
             </span>
-            <div className="p-1.5 sm:p-2 rounded-xl bg-amber-100 text-amber-900 shrink-0">
-              <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <div className="text-base sm:text-lg font-black text-amber-950 font-mono tabular-nums mt-0.5 truncate">
+              {pendingOpsCount} <span className="text-xs font-normal text-amber-800">Tasks</span>
             </div>
           </div>
-          <div className="text-xl sm:text-2xl font-black text-amber-950 mt-1.5 sm:mt-2 truncate font-mono tabular-nums">
-            {pendingOpsCount} <span className="text-xs sm:text-sm font-sans font-medium text-amber-800">Activities</span>
+          <div className="p-1.5 rounded-xl bg-amber-100 text-amber-900 shrink-0 hidden sm:block">
+            <AlertCircle className="w-4 h-4" />
           </div>
-          <p className="text-[10px] sm:text-[11px] text-amber-800 mt-1 font-medium truncate">
-            Next 7 days schedule
-          </p>
-        </ClayCard>
-
-        {/* Season Net Profit */}
-        <ClayCard variant="white" className="border border-emerald-100 p-3 sm:p-4">
-          <div className="flex items-center justify-between gap-1.5">
-            <span className="text-[11px] sm:text-xs font-bold text-[#1b4332] uppercase tracking-wider truncate">
-              Farm Profit
-            </span>
-            <div className="p-1.5 sm:p-2 rounded-xl bg-[#d8f3dc] text-[#1b4332] shrink-0">
-              <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            </div>
-          </div>
-          <div className="text-xl sm:text-2xl font-black text-[#1b4332] mt-1.5 sm:mt-2 truncate font-mono tabular-nums">
-            ₹{(financialSummary.netProfitInr / 1000).toFixed(1)}k
-          </div>
-          <p className="text-[10px] sm:text-[11px] text-emerald-700 mt-1 font-medium truncate">
-            ROI: +{financialSummary.roiPercentage}%
-          </p>
-        </ClayCard>
+        </div>
       </div>
 
       {/* Digital Farm Journal & Weather */}

@@ -1,25 +1,31 @@
 import React, { useState } from 'react';
 import { Modal } from '../common/Modal';
 import { db } from '../../db';
-import { Database, Layers, Download, Upload, CheckCircle2, ShieldCheck, RefreshCw } from 'lucide-react';
+import { Database, Layers, Download, Upload, CheckCircle2, ShieldCheck, RefreshCw, User as UserIcon } from 'lucide-react';
+import type { User } from '../../types';
 
 interface SystemInfoModalProps {
   isOpen: boolean;
   onClose: () => void;
   onRefreshData: () => void;
   onResetSeedData?: () => void;
+  currentUser?: User | null;
 }
 
 export const SystemInfoModal: React.FC<SystemInfoModalProps> = ({
   isOpen,
   onClose,
   onRefreshData,
-  onResetSeedData
+  onResetSeedData,
+  currentUser
 }) => {
   const [importStatus, setImportStatus] = useState<string | null>(null);
 
+  const farmName = currentUser?.farmName || 'Green Valley Farm';
+
   const handleExportJSON = async () => {
     const data = {
+      users: await db.users.toArray(),
       fields: await db.fields.toArray(),
       crops: await db.crops.toArray(),
       cropRotations: await db.cropRotations.toArray(),
@@ -53,6 +59,7 @@ export const SystemInfoModal: React.FC<SystemInfoModalProps> = ({
             await db.transaction(
               'rw',
               [
+                db.users,
                 db.fields,
                 db.crops,
                 db.cropRotations,
@@ -63,6 +70,10 @@ export const SystemInfoModal: React.FC<SystemInfoModalProps> = ({
                 db.maintenance
               ],
               async () => {
+                if (parsed.users && parsed.users.length > 0) {
+                  await db.users.clear();
+                  await db.users.bulkAdd(parsed.users);
+                }
                 await db.fields.clear();
                 await db.crops.clear();
                 await db.cropRotations.clear();
@@ -100,7 +111,7 @@ export const SystemInfoModal: React.FC<SystemInfoModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Farm Journal Data & Storage"
-      subtitle="Green Valley Farm local IndexedDB database metrics & backup management"
+      subtitle={`${farmName} local IndexedDB database metrics & backup management`}
       maxWidth="2xl"
     >
       <div className="space-y-4 sm:space-y-6 text-xs text-emerald-950 min-w-0">
@@ -118,21 +129,40 @@ export const SystemInfoModal: React.FC<SystemInfoModalProps> = ({
                 </span>
               </div>
               <p className="text-[11px] sm:text-xs text-emerald-800 mt-0.5 break-words">
-                Client-side transactional database storing all Green Valley Farm records persistently.
+                Client-side transactional database storing all records persistently for {farmName}.
               </p>
             </div>
           </div>
         </div>
 
+        {/* User Account Info */}
+        {currentUser && (
+          <div className="p-3 rounded-2xl bg-white border border-emerald-200 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-xl bg-emerald-100 text-[#1b4332] flex items-center justify-center font-bold text-xs shrink-0">
+                <UserIcon className="w-4 h-4 text-[#2d6a4f]" />
+              </div>
+              <div className="min-w-0">
+                <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider block">Logged In Farmer</span>
+                <span className="font-bold text-[#1b4332] text-xs truncate block">{currentUser.fullName} ({currentUser.email})</span>
+              </div>
+            </div>
+            <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-[#d8f3dc] text-[#1b4332] border border-[#74c69d] shrink-0">
+              {currentUser.farmName}
+            </span>
+          </div>
+        )}
+
         {/* IndexedDB Object Stores */}
         <div className="space-y-2 min-w-0">
           <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
-            <Layers className="w-4 h-4 text-[#2d6a4f] shrink-0" /> Active Object Stores
+            <Layers className="w-4 h-4 text-[#2d6a4f] shrink-0" /> Active Object Stores (IndexedDB)
           </h4>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {[
-              { name: 'fields', desc: '4 farm plots' },
+              { name: 'users', desc: 'Farmer accounts' },
+              { name: 'fields', desc: 'Farm plots' },
               { name: 'crops', desc: 'Crop varieties' },
               { name: 'cropRotations', desc: 'Rotation plans' },
               { name: 'operations', desc: 'Field activities' },
@@ -155,14 +185,14 @@ export const SystemInfoModal: React.FC<SystemInfoModalProps> = ({
             <ShieldCheck className="w-4 h-4 text-[#2d6a4f] shrink-0" /> Offline-First Farm Journal & Data Privacy
           </div>
           <p className="text-xs text-emerald-900 leading-relaxed break-words">
-            HarvestHub operates entirely on-device using high-performance <strong className="text-[#1b4332]">IndexedDB</strong> storage. All Green Valley Farm plot measurements, crop schedules, field operations, financials, and equipment service logs remain private and persistent in your browser without requiring an active internet connection.
+            HarvestHub operates entirely on-device using high-performance <strong className="text-[#1b4332]">IndexedDB</strong> storage. All {farmName} plot measurements, crop schedules, field operations, financials, and equipment service logs remain private and persistent in your browser without requiring an active internet connection.
           </p>
           <div className="p-2.5 sm:p-3 rounded-xl bg-[#f8faf8] border border-emerald-100 text-[11px] text-emerald-900 space-y-1">
             <div className="flex items-center gap-1.5 text-emerald-800 font-bold">
               • Complete offline field logging capability
             </div>
             <div className="flex items-center gap-1.5 text-emerald-800 font-bold">
-              • Instant transactional data reads and writes
+              • Multi-user database isolation per farmer account
             </div>
             <div className="flex items-center gap-1.5 text-emerald-800 font-bold">
               • Full JSON backup and restore support
@@ -220,3 +250,4 @@ export const SystemInfoModal: React.FC<SystemInfoModalProps> = ({
     </Modal>
   );
 };
+

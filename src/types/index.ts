@@ -50,10 +50,21 @@ export type ExpenseCategory =
 
 export type YieldQualityGrade = 'Grade A (Premium)' | 'Grade B (Standard)' | 'Grade C (Fair)';
 
+// User & Authentication Entities
+export interface User {
+  id?: number;
+  fullName: string;
+  email: string;
+  password: string;
+  farmName: string;
+  createdAt: string;
+}
+
 // Database Entities
 
 export interface Field {
   id?: number;
+  userId?: number;
   name: string;
   code: string;
   sizeAcres: number;
@@ -70,6 +81,7 @@ export interface Field {
 
 export interface Crop {
   id?: number;
+  userId?: number;
   name: string;
   variety: string;
   category: CropCategory;
@@ -84,6 +96,7 @@ export interface Crop {
 
 export interface FieldCropAssignment {
   id?: number;
+  userId?: number;
   fieldId: number;
   fieldName: string;
   cropId: number;
@@ -99,6 +112,7 @@ export interface FieldCropAssignment {
 
 export interface CropRotation {
   id?: number;
+  userId?: number;
   fieldId: number;
   fieldName: string;
   previousCrop: string;
@@ -115,6 +129,7 @@ export interface CropRotation {
 
 export interface FieldOperation {
   id?: number;
+  userId?: number;
   fieldId: number;
   fieldName: string;
   cropName?: string;
@@ -131,6 +146,7 @@ export interface FieldOperation {
 
 export interface Expense {
   id?: number;
+  userId?: number;
   fieldId: number;
   fieldName: string;
   category: ExpenseCategory;
@@ -144,6 +160,7 @@ export interface Expense {
 
 export interface YieldRecord {
   id?: number;
+  userId?: number;
   fieldId: number;
   fieldName: string;
   cropName: string;
@@ -199,6 +216,7 @@ export type MaintenanceStatus =
 
 export interface Equipment {
   id?: number;
+  userId?: number;
   name: string; // e.g. Mahindra Tractor
   type: string; // e.g. Tractor, Water Pump, Seed Drill, Sprayer
   model: string;
@@ -215,6 +233,7 @@ export interface Equipment {
 
 export interface MaintenanceRecord {
   id?: number;
+  userId?: number;
   equipmentId: number;
   equipmentName: string;
   maintenanceTask: string;

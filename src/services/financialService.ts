@@ -1,27 +1,38 @@
 import { db } from '../db';
 import type { Expense, YieldRecord, FarmFinancialSummary } from '../types';
+import { authService } from './authService';
 
 export interface IFinancialService {
-  getAllExpenses(): Promise<Expense[]>;
+  getAllExpenses(userId?: number): Promise<Expense[]>;
   addExpense(expense: Omit<Expense, 'id'>): Promise<number>;
   updateExpense(id: number, expense: Partial<Expense>): Promise<void>;
   deleteExpense(id: number): Promise<void>;
 
-  getAllYields(): Promise<YieldRecord[]>;
+  getAllYields(userId?: number): Promise<YieldRecord[]>;
   addYield(yieldRecord: Omit<YieldRecord, 'id'>): Promise<number>;
   updateYield(id: number, yieldRecord: Partial<YieldRecord>): Promise<void>;
   deleteYield(id: number): Promise<void>;
 
-  getFinancialSummary(): Promise<FarmFinancialSummary>;
+  getFinancialSummary(userId?: number): Promise<FarmFinancialSummary>;
 }
 
 export class IndexedDBFinancialService implements IFinancialService {
-  async getAllExpenses(): Promise<Expense[]> {
+  async getAllExpenses(userId?: number): Promise<Expense[]> {
+    const targetUserId = userId ?? authService.getCurrentUserId();
+    if (targetUserId) {
+      return await db.expenses
+        .filter((e) => e.userId === targetUserId || (!e.userId && targetUserId === 1))
+        .toArray();
+    }
     return await db.expenses.toArray();
   }
 
   async addExpense(expense: Omit<Expense, 'id'>): Promise<number> {
-    return await db.expenses.add(expense as Expense);
+    const userId = expense.userId ?? authService.getCurrentUserId() ?? 1;
+    return await db.expenses.add({
+      ...expense,
+      userId
+    } as Expense);
   }
 
   async updateExpense(id: number, expense: Partial<Expense>): Promise<void> {
@@ -32,12 +43,22 @@ export class IndexedDBFinancialService implements IFinancialService {
     await db.expenses.delete(id);
   }
 
-  async getAllYields(): Promise<YieldRecord[]> {
+  async getAllYields(userId?: number): Promise<YieldRecord[]> {
+    const targetUserId = userId ?? authService.getCurrentUserId();
+    if (targetUserId) {
+      return await db.yields
+        .filter((y) => y.userId === targetUserId || (!y.userId && targetUserId === 1))
+        .toArray();
+    }
     return await db.yields.toArray();
   }
 
   async addYield(yieldRecord: Omit<YieldRecord, 'id'>): Promise<number> {
-    return await db.yields.add(yieldRecord as YieldRecord);
+    const userId = yieldRecord.userId ?? authService.getCurrentUserId() ?? 1;
+    return await db.yields.add({
+      ...yieldRecord,
+      userId
+    } as YieldRecord);
   }
 
   async updateYield(id: number, yieldRecord: Partial<YieldRecord>): Promise<void> {
@@ -48,9 +69,9 @@ export class IndexedDBFinancialService implements IFinancialService {
     await db.yields.delete(id);
   }
 
-  async getFinancialSummary(): Promise<FarmFinancialSummary> {
-    const expenses = await db.expenses.toArray();
-    const yields = await db.yields.toArray();
+  async getFinancialSummary(userId?: number): Promise<FarmFinancialSummary> {
+    const expenses = await this.getAllExpenses(userId);
+    const yields = await this.getAllYields(userId);
 
     const totalExpensesInr = expenses.reduce((sum, e) => sum + (e.amountInr || 0), 0);
     const totalRevenueInr = yields.reduce((sum, y) => sum + (y.totalRevenueInr || 0), 0);
@@ -82,9 +103,15 @@ export class IndexedDBFinancialService implements IFinancialService {
     }
 
     // Accumulate expenses by matching field crops if possible
-    const fields = await db.fields.toArray();
+    const targetUserId = userId ?? authService.getCurrentUserId();
+    const fields = targetUserId
+      ? await db.fields
+          .filter((f) => f.userId === targetUserId || (!f.userId && targetUserId === 1))
+          .toArray()
+      : await db.fields.toArray();
+
     const fieldCropLookup = new Map<number, string>();
-    fields.forEach(f => {
+    fields.forEach((f) => {
       if (f.id && f.currentCropName) {
         fieldCropLookup.set(f.id, f.currentCropName);
       }

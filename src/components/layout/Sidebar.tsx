@@ -8,8 +8,10 @@ import {
   Leaf,
   Info,
   Wrench,
-  X
+  X,
+  LogOut
 } from 'lucide-react';
+import type { User } from '../../types';
 
 interface SidebarProps {
   activeTab: string;
@@ -17,6 +19,8 @@ interface SidebarProps {
   onOpenSystemInfo: () => void;
   isMobileOpen?: boolean;
   onCloseMobile?: () => void;
+  currentUser?: User | null;
+  onLogout?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -24,7 +28,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   setActiveTab,
   onOpenSystemInfo,
   isMobileOpen = false,
-  onCloseMobile
+  onCloseMobile,
+  currentUser,
+  onLogout
 }) => {
   const navItems = [
     {
@@ -143,8 +149,42 @@ export const Sidebar: React.FC<SidebarProps> = ({
         })}
       </nav>
 
+      {/* User Profile in Sidebar */}
+      {currentUser && (
+        <div className="pt-2 border-t border-emerald-100 mt-1">
+          <div className="p-2.5 rounded-2xl bg-white border border-emerald-200/80 flex items-center justify-between gap-2 shadow-2xs">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#2d6a4f] to-[#1b4332] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                {currentUser.fullName ? currentUser.fullName.charAt(0).toUpperCase() : 'U'}
+              </div>
+              <div className="min-w-0">
+                <div className="text-xs font-bold text-[#1b4332] truncate leading-tight">
+                  {currentUser.fullName}
+                </div>
+                <div className="text-[11px] text-emerald-700 font-medium truncate leading-tight">
+                  {currentUser.farmName}
+                </div>
+              </div>
+            </div>
+            {onLogout && (
+              <button
+                type="button"
+                onClick={() => {
+                  onLogout();
+                  if (isMobile && onCloseMobile) onCloseMobile();
+                }}
+                className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer shrink-0"
+                title="Logout"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Bottom Farm Journal Information & Backup */}
-      <div className="pt-3 border-t border-emerald-100 mt-1">
+      <div className="pt-2">
         <div
           onClick={() => {
             onOpenSystemInfo();
@@ -153,7 +193,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           className="p-3 rounded-2xl bg-gradient-to-br from-[#e8f5e9] to-[#d8f3dc] border border-emerald-300/60 cursor-pointer hover:shadow-md transition-all text-xs group"
         >
           <div className="flex items-center gap-1.5 font-bold text-[#1b4332] mb-0.5">
-            <Info className="w-4 h-4 text-[#2d6a4f] group-hover:scale-110 transition-transform" /> Green Valley Farm
+            <Info className="w-4 h-4 text-[#2d6a4f] group-hover:scale-110 transition-transform" />{' '}
+            {currentUser?.farmName || 'Green Valley Farm'}
           </div>
           <p className="text-[11px] text-emerald-800 leading-tight">
             Local offline farm journal. Tap for data backup & storage info.

@@ -1,5 +1,6 @@
 import Dexie, { type Table } from 'dexie';
 import type { 
+  User,
   Field, 
   Crop, 
   CropRotation, 
@@ -11,6 +12,7 @@ import type {
 } from '../types';
 
 export class HarvestHubDatabase extends Dexie {
+  users!: Table<User>;
   fields!: Table<Field>;
   crops!: Table<Crop>;
   cropRotations!: Table<CropRotation>;
@@ -36,6 +38,17 @@ export class HarvestHubDatabase extends Dexie {
     });
     this.version(3).stores({
       operations: '++id, fieldId, operationType, status, operationDate, costInr'
+    });
+    this.version(4).stores({
+      users: '++id, &email, fullName, farmName',
+      fields: '++id, userId, name, code, status, soilType',
+      crops: '++id, userId, name, category, season',
+      cropRotations: '++id, userId, fieldId, previousCrop, currentCrop, status, rotationYear',
+      operations: '++id, userId, fieldId, operationType, status, operationDate, costInr',
+      expenses: '++id, userId, fieldId, category, date',
+      yields: '++id, userId, fieldId, cropName, harvestDate',
+      equipment: '++id, userId, name, type, status, nextMaintenanceDate',
+      maintenance: '++id, userId, equipmentId, scheduledDate, status'
     });
   }
 }

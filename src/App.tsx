@@ -14,9 +14,11 @@ import { SystemInfoModal } from './components/settings/SystemInfoModal';
 import { FieldDetailModal } from './components/fields/FieldDetailModal';
 import { FieldFormModal } from './components/fields/FieldFormModal';
 import { ConfirmModal } from './components/common/ConfirmModal';
+import { AuthScreen } from './components/auth/AuthScreen';
 
 // Services & Types
 import { initializeDatabase } from './db/databaseService';
+import { authService } from './services/authService';
 import { fieldService } from './services/fieldService';
 import { cropService } from './services/cropService';
 import { rotationService } from './services/rotationService';
@@ -25,6 +27,7 @@ import { financialService } from './services/financialService';
 import { equipmentService } from './services/equipmentService';
 
 import type {
+  User,
   Field,
   Crop,
   CropRotation,
@@ -35,8 +38,11 @@ import type {
   Equipment,
   MaintenanceRecord
 } from './types';
+import { Sprout } from 'lucide-react';
 
 export function App() {
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [dbReady, setDbReady] = useState(false);
 
@@ -84,9 +90,10 @@ export function App() {
     setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
   };
 
-  // Refresh all state from IndexedDB
-  const refreshAllData = useCallback(async () => {
+  // Refresh all state from IndexedDB for the active user
+  const refreshAllData = useCallback(async (targetUserId?: number) => {
     try {
+      const activeId = targetUserId ?? currentUser?.id ?? authService.getCurrentUserId() ?? undefined;
       const [
         fList,
         cList,
@@ -98,15 +105,15 @@ export function App() {
         mList,
         fSummary
       ] = await Promise.all([
-        fieldService.getAllFields(),
-        cropService.getAllCrops(),
-        rotationService.getAllRotations(),
-        operationService.getAllOperations(),
-        financialService.getAllExpenses(),
-        financialService.getAllYields(),
-        equipmentService.getAllEquipment(),
-        equipmentService.getAllMaintenance(),
-        financialService.getFinancialSummary()
+        fieldService.getAllFields(activeId),
+        cropService.getAllCrops(activeId),
+        rotationService.getAllRotations(activeId),
+        operationService.getAllOperations(activeId),
+        financialService.getAllExpenses(activeId),
+        financialService.getAllYields(activeId),
+        equipmentService.getAllEquipment(activeId),
+        equipmentService.getAllMaintenance(activeId),
+        financialService.getFinancialSummary(activeId)
       ]);
 
       setFields(fList);
@@ -121,19 +128,51 @@ export function App() {
     } catch (err) {
       console.error('Failed to refresh data from IndexedDB:', err);
     }
-  }, []);
+  }, [currentUser?.id]);
 
-  // Startup initialization
+  // Startup initialization: init DB, then restore existing session if present
   useEffect(() => {
     async function init() {
-      const success = await initializeDatabase(false);
-      setDbReady(success);
-      if (success) {
-        await refreshAllData();
+      try {
+        const success = await initializeDatabase(false);
+        setDbReady(success);
+        if (success) {
+          const storedUser = await authService.getCurrentUser();
+          if (storedUser) {
+            setCurrentUser(storedUser);
+            await refreshAllData(storedUser.id);
+          }
+        }
+      } catch (err) {
+        console.error('Initialization error:', err);
+      } finally {
+        setIsAuthLoading(false);
       }
     }
     init();
   }, [refreshAllData]);
+
+  // Authentication Handlers
+  const handleLoginSuccess = async (user: User) => {
+    setCurrentUser(user);
+    setActiveTab('dashboard');
+    await refreshAllData(user.id);
+  };
+
+  const handleLogout = () => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Logout from HarvestHub?',
+      message: `Are you sure you want to log out of ${currentUser?.farmName || 'your farm'}? Your farm records and settings remain safely stored in IndexedDB.`,
+      confirmText: 'Logout',
+      variant: 'primary',
+      onConfirm: async () => {
+        await authService.logout();
+        setCurrentUser(null);
+        setActiveTab('dashboard');
+      }
+    });
+  };
 
   // Reset / Seed 4 test datasets handler
   const handleResetSeedData = () => {
@@ -145,14 +184,17 @@ export function App() {
       variant: 'primary',
       onConfirm: async () => {
         await initializeDatabase(true);
-        await refreshAllData();
+        await refreshAllData(currentUser?.id);
       }
     });
   };
 
   // Field CRUD Handlers
   const handleAddField = async (fieldData: Omit<Field, 'id' | 'createdAt' | 'updatedAt'>) => {
-    await fieldService.addField(fieldData);
+    await fieldService.addField({
+      ...fieldData,
+      userId: currentUser?.id
+    });
     await refreshAllData();
   };
 
@@ -165,8 +207,8 @@ export function App() {
     setConfirmDialog({
       isOpen: true,
       title: 'Delete Field Plot?',
-      message: 'Are you sure you want to delete this field plot? All associated crop rotations and operation journals will remain in history.',
-      confirmText: 'Delete Plot',
+      message: 'Are you sure you want to remove this field? This action cannot be undone and will delete associated plot records.',
+      confirmText: 'Delete Field',
       variant: 'danger',
       onConfirm: async () => {
         await fieldService.deleteField(id);
@@ -180,9 +222,12 @@ export function App() {
     await refreshAllData();
   };
 
-  // Rotation CRUD Handlers
+  // Crop Rotation Handlers
   const handleAddRotation = async (rotationData: Omit<CropRotation, 'id' | 'createdAt'>) => {
-    await rotationService.addRotation(rotationData);
+    await rotationService.addRotation({
+      ...rotationData,
+      userId: currentUser?.id
+    });
     await refreshAllData();
   };
 
@@ -194,8 +239,8 @@ export function App() {
   const handleDeleteRotation = (id: number) => {
     setConfirmDialog({
       isOpen: true,
-      title: 'Delete Crop Rotation?',
-      message: 'Are you sure you want to remove this crop rotation sequence from the farm plan?',
+      title: 'Delete Rotation Plan?',
+      message: 'Are you sure you want to delete this crop rotation plan?',
       confirmText: 'Delete Plan',
       variant: 'danger',
       onConfirm: async () => {
@@ -205,32 +250,12 @@ export function App() {
     });
   };
 
-  // Operation CRUD Handlers
+  // Field Operations Handlers
   const handleAddOperation = async (opData: Omit<FieldOperation, 'id'>) => {
-    await operationService.addOperation(opData);
-    // If the operation has a cost > 0, also track corresponding expense for data consistency
-    if (opData.costInr > 0) {
-      const categoryMap: Record<string, Expense['category']> = {
-        Fertilization: 'Fertilizers',
-        Sowing: 'Seeds',
-        'Pest Control': 'Pesticides & Chemicals',
-        Weeding: 'Labor & Wages',
-        Harvesting: 'Labor & Wages',
-        Irrigation: 'Irrigation & Electricity',
-        Tillage: 'Machinery & Fuel',
-        'Post-Harvest Handling': 'Machinery & Fuel'
-      };
-      await financialService.addExpense({
-        fieldId: opData.fieldId,
-        fieldName: opData.fieldName,
-        category: categoryMap[opData.operationType] || 'Miscellaneous',
-        description: `${opData.operationType}: ${opData.title}`,
-        amountInr: opData.costInr,
-        date: opData.operationDate,
-        paymentMethod: 'UPI',
-        notes: opData.materialDetails ? `Material: ${opData.materialDetails}` : opData.notes
-      });
-    }
+    await operationService.addOperation({
+      ...opData,
+      userId: currentUser?.id
+    });
     await refreshAllData();
   };
 
@@ -242,9 +267,9 @@ export function App() {
   const handleDeleteOperation = (id: number) => {
     setConfirmDialog({
       isOpen: true,
-      title: 'Delete Field Operation?',
-      message: 'Are you sure you want to remove this field activity log from the farm journal?',
-      confirmText: 'Delete Log',
+      title: 'Delete Operation Log?',
+      message: 'Are you sure you want to delete this operation record?',
+      confirmText: 'Delete Record',
       variant: 'danger',
       onConfirm: async () => {
         await operationService.deleteOperation(id);
@@ -258,9 +283,12 @@ export function App() {
     await refreshAllData();
   };
 
-  // Financial CRUD Handlers
-  const handleAddExpense = async (expData: Omit<Expense, 'id'>) => {
-    await financialService.addExpense(expData);
+  // Financial Handlers (Expenses & Yields)
+  const handleAddExpense = async (expenseData: Omit<Expense, 'id'>) => {
+    await financialService.addExpense({
+      ...expenseData,
+      userId: currentUser?.id
+    });
     await refreshAllData();
   };
 
@@ -273,8 +301,8 @@ export function App() {
     setConfirmDialog({
       isOpen: true,
       title: 'Delete Expense Record?',
-      message: 'Are you sure you want to delete this cultivation expense ledger entry?',
-      confirmText: 'Delete Entry',
+      message: 'Are you sure you want to delete this expense record?',
+      confirmText: 'Delete Expense',
       variant: 'danger',
       onConfirm: async () => {
         await financialService.deleteExpense(id);
@@ -283,8 +311,11 @@ export function App() {
     });
   };
 
-  const handleAddYield = async (yldData: Omit<YieldRecord, 'id'>) => {
-    await financialService.addYield(yldData);
+  const handleAddYield = async (yieldData: Omit<YieldRecord, 'id'>) => {
+    await financialService.addYield({
+      ...yieldData,
+      userId: currentUser?.id
+    });
     await refreshAllData();
   };
 
@@ -296,9 +327,9 @@ export function App() {
   const handleDeleteYield = (id: number) => {
     setConfirmDialog({
       isOpen: true,
-      title: 'Delete Harvest Yield?',
-      message: 'Are you sure you want to delete this harvest production and revenue sales record?',
-      confirmText: 'Delete Record',
+      title: 'Delete Harvest Yield Record?',
+      message: 'Are you sure you want to delete this yield record?',
+      confirmText: 'Delete Yield',
       variant: 'danger',
       onConfirm: async () => {
         await financialService.deleteYield(id);
@@ -307,9 +338,12 @@ export function App() {
     });
   };
 
-  // Equipment CRUD Handlers
-  const handleAddEquipment = async (eqData: Omit<Equipment, 'id' | 'createdAt' | 'updatedAt'>) => {
-    await equipmentService.addEquipment(eqData);
+  // Equipment & Maintenance Handlers
+  const handleAddEquipment = async (eqData: Omit<Equipment, 'id'>) => {
+    await equipmentService.addEquipment({
+      ...eqData,
+      userId: currentUser?.id
+    });
     await refreshAllData();
   };
 
@@ -321,8 +355,8 @@ export function App() {
   const handleDeleteEquipment = (id: number) => {
     setConfirmDialog({
       isOpen: true,
-      title: 'Delete Equipment?',
-      message: 'Are you sure you want to delete this equipment from your machinery fleet? All associated maintenance history will also be removed.',
+      title: 'Delete Equipment Record?',
+      message: 'Are you sure you want to delete this machinery and its maintenance history?',
       confirmText: 'Delete Equipment',
       variant: 'danger',
       onConfirm: async () => {
@@ -332,9 +366,11 @@ export function App() {
     });
   };
 
-  // Maintenance CRUD Handlers
-  const handleAddMaintenance = async (mData: Omit<MaintenanceRecord, 'id' | 'createdAt'>) => {
-    await equipmentService.addMaintenance(mData);
+  const handleAddMaintenance = async (mData: Omit<MaintenanceRecord, 'id'>) => {
+    await equipmentService.addMaintenance({
+      ...mData,
+      userId: currentUser?.id
+    });
     await refreshAllData();
   };
 
@@ -346,9 +382,9 @@ export function App() {
   const handleDeleteMaintenance = (id: number) => {
     setConfirmDialog({
       isOpen: true,
-      title: 'Delete Maintenance Log?',
-      message: 'Are you sure you want to delete this equipment maintenance schedule/record?',
-      confirmText: 'Delete Log',
+      title: 'Delete Maintenance Record?',
+      message: 'Are you sure you want to delete this maintenance record?',
+      confirmText: 'Delete Record',
       variant: 'danger',
       onConfirm: async () => {
         await equipmentService.deleteMaintenance(id);
@@ -367,15 +403,46 @@ export function App() {
     setIsFieldDetailOpen(true);
   };
 
+  // 1. Initial Auth Loading Screen
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen bg-[#f2f6f3] flex flex-col items-center justify-center p-4">
+        <div className="clay-card p-8 flex flex-col items-center gap-4 text-center max-w-sm w-full">
+          <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-[#2d6a4f] to-[#1b4332] text-white flex items-center justify-center shadow-lg border-2 border-emerald-400/40 animate-pulse">
+            <Sprout className="w-9 h-9 text-[#d8f3dc]" />
+          </div>
+          <div>
+            <h2 className="text-xl font-black text-[#1b4332]">HarvestHub</h2>
+            <p className="text-xs font-semibold text-emerald-800 italic mt-0.5">
+              Farm Management & Crop Planning
+            </p>
+          </div>
+          <div className="w-8 h-8 border-3 border-emerald-200 border-t-[#2d6a4f] rounded-full animate-spin mt-2" />
+          <p className="text-xs text-emerald-700 font-medium">
+            Loading secure IndexedDB storage...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. Authentication Screen Guard: Unauthenticated users MUST NOT access dashboard or modules
+  if (!currentUser) {
+    return <AuthScreen onLoginSuccess={handleLoginSuccess} />;
+  }
+
+  // 3. Protected HarvestHub Application: User is logged in
   return (
     <div className="min-h-screen flex flex-col bg-[#f2f6f3] text-[#1c2e24]">
-      {/* Top Navigation Header */}
+      {/* Top Navigation Header with Profile & Logout */}
       <Header
         activeTab={activeTab}
         onOpenSystemInfo={() => setIsSystemInfoOpen(true)}
         onResetSeedData={handleResetSeedData}
         dbReady={dbReady}
         onToggleSidebar={() => setIsMobileSidebarOpen((prev) => !prev)}
+        currentUser={currentUser}
+        onLogout={handleLogout}
       />
 
       {/* Main Body */}
@@ -387,6 +454,8 @@ export function App() {
           onOpenSystemInfo={() => setIsSystemInfoOpen(true)}
           isMobileOpen={isMobileSidebarOpen}
           onCloseMobile={() => setIsMobileSidebarOpen(false)}
+          currentUser={currentUser}
+          onLogout={handleLogout}
         />
 
         {/* Dynamic Content View */}
@@ -480,7 +549,7 @@ export function App() {
       <SystemInfoModal
         isOpen={isSystemInfoOpen}
         onClose={() => setIsSystemInfoOpen(false)}
-        onRefreshData={refreshAllData}
+        onRefreshData={() => refreshAllData(currentUser?.id)}
         onResetSeedData={handleResetSeedData}
       />
 

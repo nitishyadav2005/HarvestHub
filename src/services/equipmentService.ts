@@ -1,15 +1,16 @@
 import { db } from '../db';
 import type { Equipment, MaintenanceRecord, MaintenanceStatus } from '../types';
 import { calculateMaintenanceStatus } from '../types';
+import { authService } from './authService';
 
 export interface IEquipmentService {
-  getAllEquipment(): Promise<Equipment[]>;
+  getAllEquipment(userId?: number): Promise<Equipment[]>;
   getEquipmentById(id: number): Promise<Equipment | undefined>;
   addEquipment(equipment: Omit<Equipment, 'id'>): Promise<number>;
   updateEquipment(id: number, equipment: Partial<Equipment>): Promise<void>;
   deleteEquipment(id: number): Promise<void>;
 
-  getAllMaintenance(): Promise<MaintenanceRecord[]>;
+  getAllMaintenance(userId?: number): Promise<MaintenanceRecord[]>;
   getMaintenanceByEquipmentId(equipmentId: number): Promise<MaintenanceRecord[]>;
   addMaintenance(maintenance: Omit<MaintenanceRecord, 'id'>): Promise<number>;
   updateMaintenance(id: number, maintenance: Partial<MaintenanceRecord>): Promise<void>;
@@ -18,7 +19,13 @@ export interface IEquipmentService {
 }
 
 export class IndexedDBEquipmentService implements IEquipmentService {
-  async getAllEquipment(): Promise<Equipment[]> {
+  async getAllEquipment(userId?: number): Promise<Equipment[]> {
+    const targetUserId = userId ?? authService.getCurrentUserId();
+    if (targetUserId) {
+      return await db.equipment
+        .filter((eq) => eq.userId === targetUserId || (!eq.userId && targetUserId === 1))
+        .toArray();
+    }
     return await db.equipment.toArray();
   }
 
@@ -28,8 +35,10 @@ export class IndexedDBEquipmentService implements IEquipmentService {
 
   async addEquipment(equipment: Omit<Equipment, 'id'>): Promise<number> {
     const now = new Date().toISOString();
+    const userId = equipment.userId ?? authService.getCurrentUserId() ?? 1;
     return await db.equipment.add({
       ...equipment,
+      userId,
       createdAt: now,
       updatedAt: now
     } as Equipment);
@@ -51,8 +60,14 @@ export class IndexedDBEquipmentService implements IEquipmentService {
     });
   }
 
-  async getAllMaintenance(): Promise<MaintenanceRecord[]> {
-    const records = await db.maintenance.toArray();
+  async getAllMaintenance(userId?: number): Promise<MaintenanceRecord[]> {
+    const targetUserId = userId ?? authService.getCurrentUserId();
+    let records = await db.maintenance.toArray();
+    if (targetUserId) {
+      records = records.filter(
+        (m) => m.userId === targetUserId || (!m.userId && targetUserId === 1)
+      );
+    }
     // Sort so upcoming & overdue come first, then latest dates
     return records.sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime());
   }
@@ -64,9 +79,11 @@ export class IndexedDBEquipmentService implements IEquipmentService {
 
   async addMaintenance(maintenance: Omit<MaintenanceRecord, 'id'>): Promise<number> {
     const now = new Date().toISOString();
+    const userId = maintenance.userId ?? authService.getCurrentUserId() ?? 1;
     const status = maintenance.status || calculateMaintenanceStatus(maintenance.scheduledDate);
     const id = await db.maintenance.add({
       ...maintenance,
+      userId,
       status,
       createdAt: now
     } as MaintenanceRecord);

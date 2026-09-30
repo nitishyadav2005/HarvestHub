@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import type { Field, YieldRecord, YieldQualityGrade } from '../../types';
 import { Modal } from '../common/Modal';
-import { Check } from 'lucide-react';
+import { Check, AlertCircle } from 'lucide-react';
+import { formatINR, cleanNumber, isValidNonNegative } from '../../utils/currency';
 
 interface YieldFormModalProps {
   isOpen: boolean;
@@ -17,6 +18,12 @@ const QUALITY_GRADES: YieldQualityGrade[] = [
   'Grade C (Fair)'
 ];
 
+const YIELD_UNITS = [
+  { value: 'quintal', label: 'Quintal (100 kg)' },
+  { value: 'kg', label: 'Kilogram (kg)' },
+  { value: 'tonne', label: 'Metric Tonne (1,000 kg)' }
+];
+
 export const YieldFormModal: React.FC<YieldFormModalProps> = ({
   isOpen,
   onClose,
@@ -28,21 +35,27 @@ export const YieldFormModal: React.FC<YieldFormModalProps> = ({
   const [fieldName, setFieldName] = useState(fields[0]?.name || '');
   const [cropName, setCropName] = useState(fields[0]?.currentCropName || 'Wheat (HD 2967)');
   const [harvestDate, setHarvestDate] = useState(new Date().toISOString().split('T')[0]);
-  const [quantityQuintals, setQuantityQuintals] = useState<number>(85);
-  const [pricePerQuintalInr, setPricePerQuintalInr] = useState<number>(2275);
+  const [quantityStr, setQuantityStr] = useState<string>('85');
+  const [unit, setUnit] = useState<string>('quintal');
+  const [sellingPriceStr, setSellingPriceStr] = useState<string>('2275');
   const [buyerName, setBuyerName] = useState('Khanna APMC Mandi');
   const [qualityGrade, setQualityGrade] = useState<YieldQualityGrade>('Grade A (Premium)');
   const [storageLocation, setStorageLocation] = useState('Warehouse Bay 2');
   const [notes, setNotes] = useState('');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    setErrorMessage(null);
     if (initialData) {
       setFieldId(initialData.fieldId);
       setFieldName(initialData.fieldName);
       setCropName(initialData.cropName);
       setHarvestDate(initialData.harvestDate);
-      setQuantityQuintals(initialData.quantityQuintals);
-      setPricePerQuintalInr(initialData.pricePerQuintalInr);
+      const qty = initialData.quantity ?? initialData.quantityQuintals ?? 0;
+      setQuantityStr(qty.toString());
+      setUnit(initialData.unit || 'quintal');
+      const price = initialData.sellingPrice ?? initialData.pricePerQuintalInr ?? 0;
+      setSellingPriceStr(price.toString());
       setBuyerName(initialData.buyerName || '');
       setQualityGrade(initialData.qualityGrade);
       setStorageLocation(initialData.storageLocation || '');
@@ -54,8 +67,9 @@ export const YieldFormModal: React.FC<YieldFormModalProps> = ({
         setCropName(fields[0].currentCropName || 'Wheat (HD 2967)');
       }
       setHarvestDate(new Date().toISOString().split('T')[0]);
-      setQuantityQuintals(85);
-      setPricePerQuintalInr(2275);
+      setQuantityStr('85');
+      setUnit('quintal');
+      setSellingPriceStr('2275');
       setBuyerName('APMC Mandi Procurement Center');
       setQualityGrade('Grade A (Premium)');
       setStorageLocation('Direct Mandi Sale');
@@ -72,24 +86,52 @@ export const YieldFormModal: React.FC<YieldFormModalProps> = ({
     }
   };
 
-  const totalRevenue = (quantityQuintals || 0) * (pricePerQuintalInr || 0);
+  const parsedQty = cleanNumber(parseFloat(quantityStr));
+  const parsedPrice = cleanNumber(parseFloat(sellingPriceStr));
+  // Requirement 2: Revenue = Quantity * Selling Price
+  const calculatedRevenue = Number((parsedQty * parsedPrice).toFixed(2));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!cropName.trim()) return;
+    setErrorMessage(null);
+
+    if (!cropName.trim()) {
+      setErrorMessage('Harvested Crop Variety is required.');
+      return;
+    }
+
+    if (!isValidNonNegative(quantityStr) || parseFloat(quantityStr) < 0) {
+      setErrorMessage('Harvested quantity must be a non-negative number (>= 0).');
+      return;
+    }
+
+    if (!isValidNonNegative(sellingPriceStr) || parseFloat(sellingPriceStr) < 0) {
+      setErrorMessage('Selling price must be a non-negative number (>= 0).');
+      return;
+    }
+
+    const finalQty = Number(parseFloat(quantityStr).toFixed(2));
+    const finalPrice = Number(parseFloat(sellingPriceStr).toFixed(2));
+    const finalRev = Number((finalQty * finalPrice).toFixed(2));
+
+    const selectedField = fields.find((f) => f.id === Number(fieldId));
 
     onSubmit({
       fieldId: Number(fieldId),
       fieldName,
-      cropName,
+      cropId: selectedField?.currentCropId,
+      cropName: cropName.trim(),
       harvestDate,
-      quantityQuintals: Number(quantityQuintals),
-      pricePerQuintalInr: Number(pricePerQuintalInr),
-      totalRevenueInr: totalRevenue,
-      buyerName,
+      quantity: finalQty,
+      quantityQuintals: unit === 'quintal' ? finalQty : (unit === 'kg' ? finalQty / 100 : finalQty * 10),
+      unit,
+      sellingPrice: finalPrice,
+      pricePerQuintalInr: unit === 'quintal' ? finalPrice : (unit === 'kg' ? finalPrice * 100 : finalPrice / 10),
+      totalRevenueInr: finalRev,
+      buyerName: buyerName.trim(),
       qualityGrade,
-      storageLocation,
-      notes
+      storageLocation: storageLocation.trim(),
+      notes: notes.trim()
     });
 
     onClose();
@@ -103,6 +145,13 @@ export const YieldFormModal: React.FC<YieldFormModalProps> = ({
       subtitle="Record harvest output, Mandi sale price, and gross crop revenue"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
+        {errorMessage && (
+          <div className="p-3 rounded-2xl bg-red-50 border border-red-200 flex items-center gap-2 text-xs font-semibold text-red-800 animate-fadeIn">
+            <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+            <span>{errorMessage}</span>
+          </div>
+        )}
+
         {/* Field & Crop */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
@@ -131,7 +180,10 @@ export const YieldFormModal: React.FC<YieldFormModalProps> = ({
               required
               placeholder="e.g. Basmati Rice (Pusa 1121)"
               value={cropName}
-              onChange={(e) => setCropName(e.target.value)}
+              onChange={(e) => {
+                setCropName(e.target.value);
+                if (errorMessage) setErrorMessage(null);
+              }}
               className="w-full clay-inset-white px-3.5 py-2 text-sm font-bold text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-xl"
             />
           </div>
@@ -170,49 +222,69 @@ export const YieldFormModal: React.FC<YieldFormModalProps> = ({
           </div>
         </div>
 
-        {/* Quantity & Price per Quintal */}
+        {/* Quantity, Unit & Selling Price */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
             <label className="block text-xs font-bold text-emerald-900 mb-1">
               Quantity Harvested *
             </label>
-            <div className="relative">
+            <div className="flex gap-2">
               <input
                 type="number"
-                step="0.5"
-                min="0.5"
+                min="0"
+                step="any"
                 required
-                value={quantityQuintals}
-                onChange={(e) => setQuantityQuintals(parseFloat(e.target.value) || 0)}
-                className="w-full clay-inset-white px-3.5 py-2 text-sm font-bold text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-xl"
+                placeholder="e.g. 2000"
+                value={quantityStr}
+                onChange={(e) => {
+                  setQuantityStr(e.target.value);
+                  if (errorMessage) setErrorMessage(null);
+                }}
+                className="w-full clay-inset-white px-3.5 py-2 text-sm font-bold text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-xl font-mono"
               />
-              <span className="absolute right-3 top-2 text-xs text-emerald-700 font-bold">
-                Quintals
-              </span>
+              <select
+                value={unit}
+                onChange={(e) => setUnit(e.target.value)}
+                className="clay-inset-white px-2 py-2 text-xs font-bold text-emerald-950 rounded-xl"
+              >
+                {YIELD_UNITS.map((u) => (
+                  <option key={u.value} value={u.value}>
+                    {u.value}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
           <div>
             <label className="block text-xs font-bold text-emerald-900 mb-1">
-              Sale Price / Quintal (₹) *
+              Selling Price (₹ per {unit}) *
             </label>
             <input
               type="number"
-              min="1"
+              min="0"
+              step="any"
               required
-              value={pricePerQuintalInr}
-              onChange={(e) => setPricePerQuintalInr(parseFloat(e.target.value) || 0)}
-              className="w-full clay-inset-white px-3.5 py-2 text-sm font-bold text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-xl"
+              placeholder="e.g. 40"
+              value={sellingPriceStr}
+              onChange={(e) => {
+                setSellingPriceStr(e.target.value);
+                if (errorMessage) setErrorMessage(null);
+              }}
+              className="w-full clay-inset-white px-3.5 py-2 text-sm font-bold text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-xl font-mono"
             />
           </div>
 
           <div>
             <label className="block text-xs font-bold text-emerald-900 mb-1">
-              Calculated Total Revenue
+              Calculated Revenue (₹)
             </label>
-            <div className="clay-card-mint px-3.5 py-2 rounded-xl text-center">
-              <span className="text-sm font-black text-[#1b4332]">
-                ₹{totalRevenue.toLocaleString('en-IN')}
+            <div className="clay-card-mint px-3.5 py-2 rounded-xl text-center flex flex-col justify-center">
+              <span className="text-sm font-black text-[#1b4332] font-mono tabular-nums">
+                {formatINR(calculatedRevenue)}
+              </span>
+              <span className="text-[10px] text-emerald-700">
+                {parsedQty} {unit} × ₹{parsedPrice}/{unit}
               </span>
             </div>
           </div>

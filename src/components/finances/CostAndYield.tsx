@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import type { Expense, YieldRecord, Field, FarmFinancialSummary } from '../../types';
 import { FinancialCharts } from './FinancialCharts';
 import { ExpenseFormModal } from './ExpenseFormModal';
@@ -6,6 +6,7 @@ import { YieldFormModal } from './YieldFormModal';
 import { ClayCard } from '../common/ClayCard';
 import { Badge } from '../common/Badge';
 import { IndianRupee, Plus, TrendingUp, TrendingDown, Trash2, Edit, Sprout } from 'lucide-react';
+import { computeFinancialSummary } from '../../services/financialService';
 
 interface CostAndYieldProps {
   expenses: Expense[];
@@ -41,7 +42,18 @@ export const CostAndYield: React.FC<CostAndYieldProps> = ({
   const [isYieldModalOpen, setIsYieldModalOpen] = useState(false);
   const [editingYield, setEditingYield] = useState<YieldRecord | null>(null);
 
-  const isProfit = financialSummary.netProfitInr >= 0;
+  // Synchronized single calculation layer across cards and charts
+  const summary = useMemo(() => {
+    if (
+      financialSummary &&
+      (financialSummary.expensesByCategory.length > 0 || financialSummary.cropWiseProfitability.length > 0)
+    ) {
+      return financialSummary;
+    }
+    return computeFinancialSummary(expenses, yields, fields);
+  }, [financialSummary, expenses, yields, fields]);
+
+  const isProfit = summary.netProfitInr >= 0;
 
   const handleOpenAddExpense = () => {
     setEditingExpense(null);
@@ -93,7 +105,7 @@ export const CostAndYield: React.FC<CostAndYieldProps> = ({
             Total Input Expenses
           </span>
           <div className="text-xl sm:text-2xl font-black text-amber-950 mt-1.5 sm:mt-2 truncate font-mono tabular-nums">
-            ₹{financialSummary.totalExpensesInr.toLocaleString('en-IN')}
+            ₹{summary.totalExpensesInr.toLocaleString('en-IN')}
           </div>
           <p className="text-[10px] sm:text-[11px] text-amber-800 mt-1 font-medium truncate">Inputs, seeds & labor</p>
         </ClayCard>
@@ -103,7 +115,7 @@ export const CostAndYield: React.FC<CostAndYieldProps> = ({
             Total Harvest Revenue
           </span>
           <div className="text-xl sm:text-2xl font-black text-[#1b4332] mt-1.5 sm:mt-2 truncate font-mono tabular-nums">
-            ₹{financialSummary.totalRevenueInr.toLocaleString('en-IN')}
+            ₹{summary.totalRevenueInr.toLocaleString('en-IN')}
           </div>
           <p className="text-[10px] sm:text-[11px] text-emerald-700 mt-1 font-medium truncate">Mandi sales & MSP</p>
         </ClayCard>
@@ -113,7 +125,7 @@ export const CostAndYield: React.FC<CostAndYieldProps> = ({
             Net Season Profit
           </span>
           <div className="text-xl sm:text-2xl font-black text-[#1b4332] mt-1.5 sm:mt-2 truncate font-mono tabular-nums">
-            ₹{financialSummary.netProfitInr.toLocaleString('en-IN')}
+            ₹{summary.netProfitInr.toLocaleString('en-IN')}
           </div>
           <p className="text-[10px] sm:text-[11px] text-emerald-700 mt-1 font-medium truncate">After all operational costs</p>
         </ClayCard>
@@ -124,14 +136,14 @@ export const CostAndYield: React.FC<CostAndYieldProps> = ({
           </span>
           <div className="text-xl sm:text-2xl font-black text-white mt-1.5 sm:mt-2 flex items-center gap-1 truncate font-mono tabular-nums">
             {isProfit ? <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-300 shrink-0" /> : <TrendingDown className="w-5 h-5 sm:w-6 sm:h-6 text-red-300 shrink-0" />}
-            {financialSummary.roiPercentage}%
+            {summary.roiPercentage}%
           </div>
           <p className="text-[10px] sm:text-[11px] text-emerald-200 mt-1 font-medium truncate">Profit margin percentage</p>
         </ClayCard>
       </div>
 
       {/* Visual Analytics Charts */}
-      <FinancialCharts summary={financialSummary} />
+      <FinancialCharts summary={summary} />
 
       {/* Sub Tabs: Expenses vs Harvest Sales */}
       <div className="clay-card p-3 sm:p-4 border border-emerald-100 min-w-0">

@@ -1,8 +1,9 @@
 import { db } from '../db';
 import type { Field } from '../types';
+import { authService } from './authService';
 
 export interface IFieldService {
-  getAllFields(): Promise<Field[]>;
+  getAllFields(userId?: number): Promise<Field[]>;
   getFieldById(id: number): Promise<Field | undefined>;
   addField(field: Omit<Field, 'id' | 'createdAt' | 'updatedAt'>): Promise<number>;
   updateField(id: number, field: Partial<Field>): Promise<void>;
@@ -11,7 +12,13 @@ export interface IFieldService {
 }
 
 export class IndexedDBFieldService implements IFieldService {
-  async getAllFields(): Promise<Field[]> {
+  async getAllFields(userId?: number): Promise<Field[]> {
+    const targetUserId = userId ?? authService.getCurrentUserId();
+    if (targetUserId) {
+      return await db.fields
+        .filter((f) => f.userId === targetUserId || (!f.userId && targetUserId === 1))
+        .toArray();
+    }
     return await db.fields.toArray();
   }
 
@@ -21,8 +28,10 @@ export class IndexedDBFieldService implements IFieldService {
 
   async addField(field: Omit<Field, 'id' | 'createdAt' | 'updatedAt'>): Promise<number> {
     const now = new Date().toISOString();
+    const userId = field.userId ?? authService.getCurrentUserId() ?? 1;
     const newField: Omit<Field, 'id'> = {
       ...field,
+      userId,
       createdAt: now,
       updatedAt: now
     };
