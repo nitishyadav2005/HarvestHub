@@ -139,123 +139,123 @@ export const EquipmentManagement: React.FC<EquipmentManagementProps> = ({
   return (
     <div className="space-y-6 animate-fadeIn pb-12">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-black text-[#1b4332] flex items-center gap-2">
-            <Wrench className="w-6 h-6 text-[#2d6a4f]" /> Farm Machinery & Maintenance
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-w-0">
+        <div className="min-w-0">
+          <h2 className="text-xl sm:text-2xl font-black text-[#1b4332] flex items-center gap-2 truncate">
+            <Wrench className="w-5 h-5 sm:w-6 sm:h-6 text-[#2d6a4f] shrink-0" /> Farm Machinery & Maintenance
           </h2>
-          <p className="text-xs text-emerald-800/80 font-medium">
+          <p className="text-xs text-emerald-800/80 font-medium truncate">
             Equipment health monitoring, preventive maintenance scheduling, and service logs
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          <button onClick={() => handleOpenSchedule()} className="clay-btn-secondary text-xs py-2 px-3.5">
-            <Calendar className="w-3.5 h-3.5 text-[#2d6a4f]" /> Schedule Service
+        <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto flex-wrap">
+          <button onClick={() => handleOpenSchedule()} className="clay-btn-secondary text-xs py-2 px-3.5 cursor-pointer whitespace-nowrap">
+            <Calendar className="w-3.5 h-3.5 text-[#2d6a4f] shrink-0" /> Schedule Service
           </button>
-          <button onClick={handleOpenAddEquip} className="clay-btn-primary text-xs py-2 px-3.5">
+          <button onClick={handleOpenAddEquip} className="clay-btn-primary text-xs py-2 px-3.5 cursor-pointer whitespace-nowrap">
             <Plus className="w-3.5 h-3.5" /> Add Equipment
           </button>
         </div>
       </div>
 
       {/* Equipment Overview Stat Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Total Equipment */}
-        <ClayCard variant="white" className="border border-emerald-100 p-4">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">
-              Total Equipment
+        <ClayCard variant="white" className="border border-emerald-100 p-3 sm:p-4 min-w-0">
+          <div className="flex items-center justify-between gap-1.5">
+            <span className="text-[11px] sm:text-xs font-bold text-emerald-800 uppercase tracking-wider truncate">
+              Fleet Size
             </span>
-            <div className="p-2 rounded-xl bg-[#d8f3dc] text-[#1b4332]">
-              <Layers className="w-4 h-4" />
+            <div className="p-1.5 sm:p-2 rounded-xl bg-[#d8f3dc] text-[#1b4332] shrink-0">
+              <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="text-2xl font-black text-[#1b4332] mt-2">
-            {totalEquipment} <span className="text-sm font-medium text-emerald-700">Units</span>
+          <div className="text-xl sm:text-2xl font-black text-[#1b4332] mt-1.5 sm:mt-2 truncate font-mono tabular-nums">
+            {totalEquipment} <span className="text-xs sm:text-sm font-sans font-medium text-emerald-700">Units</span>
           </div>
-          <p className="text-[11px] text-emerald-700 mt-1 font-medium">
-            Active farm machinery fleet
+          <p className="text-[10px] sm:text-[11px] text-emerald-700 mt-1 font-medium truncate">
+            Registered machines
           </p>
         </ClayCard>
 
         {/* Maintenance Due Soon */}
-        <ClayCard variant="white" className="border border-emerald-100 p-4">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-amber-800 uppercase tracking-wider">
+        <ClayCard variant="white" className="border border-emerald-100 p-3 sm:p-4 min-w-0">
+          <div className="flex items-center justify-between gap-1.5">
+            <span className="text-[11px] sm:text-xs font-bold text-amber-800 uppercase tracking-wider truncate">
               Due Soon
             </span>
-            <div className="p-2 rounded-xl bg-amber-100 text-amber-900">
-              <AlertCircle className="w-4 h-4" />
+            <div className="p-1.5 sm:p-2 rounded-xl bg-amber-100 text-amber-900 shrink-0">
+              <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="text-2xl font-black text-amber-950 mt-2">
-            {dueSoonCount} <span className="text-sm font-medium text-amber-800">Machines</span>
+          <div className="text-xl sm:text-2xl font-black text-amber-950 mt-1.5 sm:mt-2 truncate font-mono tabular-nums">
+            {dueSoonCount} <span className="text-xs sm:text-sm font-sans font-medium text-amber-800">Machines</span>
           </div>
-          <p className="text-[11px] text-amber-800 mt-1 font-medium">
-            Service due in next 7 days
+          <p className="text-[10px] sm:text-[11px] text-amber-800 mt-1 font-medium truncate">
+            Due in 7 days
           </p>
         </ClayCard>
 
         {/* Overdue Maintenance */}
-        <ClayCard variant="white" className="border border-emerald-100 p-4">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-red-800 uppercase tracking-wider">
+        <ClayCard variant="white" className="border border-emerald-100 p-3 sm:p-4 min-w-0">
+          <div className="flex items-center justify-between gap-1.5">
+            <span className="text-[11px] sm:text-xs font-bold text-red-800 uppercase tracking-wider truncate">
               Overdue
             </span>
-            <div className="p-2 rounded-xl bg-red-100 text-red-800">
-              <AlertTriangle className="w-4 h-4" />
+            <div className="p-1.5 sm:p-2 rounded-xl bg-red-100 text-red-800 shrink-0">
+              <AlertTriangle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="text-2xl font-black text-red-950 mt-2">
-            {overdueCount} <span className="text-sm font-medium text-red-800">Machines</span>
+          <div className="text-xl sm:text-2xl font-black text-red-950 mt-1.5 sm:mt-2 truncate font-mono tabular-nums">
+            {overdueCount} <span className="text-xs sm:text-sm font-sans font-medium text-red-800">Machines</span>
           </div>
-          <p className="text-[11px] text-red-700 mt-1 font-medium">
-            Requires immediate inspection
+          <p className="text-[10px] sm:text-[11px] text-red-700 mt-1 font-medium truncate">
+            Requires inspection
           </p>
         </ClayCard>
 
         {/* Recently Maintained */}
-        <ClayCard variant="white" className="border border-emerald-100 p-4">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-[#1b4332] uppercase tracking-wider">
-              Maintained
+        <ClayCard variant="white" className="border border-emerald-100 p-3 sm:p-4 min-w-0">
+          <div className="flex items-center justify-between gap-1.5">
+            <span className="text-[11px] sm:text-xs font-bold text-[#1b4332] uppercase tracking-wider truncate">
+              Serviced
             </span>
-            <div className="p-2 rounded-xl bg-emerald-100 text-emerald-800">
-              <ShieldCheck className="w-4 h-4" />
+            <div className="p-1.5 sm:p-2 rounded-xl bg-emerald-100 text-emerald-800 shrink-0">
+              <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="text-2xl font-black text-[#1b4332] mt-2">
-            {recentlyMaintainedCount} <span className="text-sm font-medium text-emerald-700">Services</span>
+          <div className="text-xl sm:text-2xl font-black text-[#1b4332] mt-1.5 sm:mt-2 truncate font-mono tabular-nums">
+            {recentlyMaintainedCount} <span className="text-xs sm:text-sm font-sans font-medium text-emerald-700">Logs</span>
           </div>
-          <p className="text-[11px] text-emerald-700 mt-1 font-medium">
+          <p className="text-[10px] sm:text-[11px] text-emerald-700 mt-1 font-medium truncate">
             Completed service logs
           </p>
         </ClayCard>
       </div>
 
       {/* Navigation Sub-Tabs */}
-      <div className="flex items-center gap-2 border-b border-emerald-200/60 pb-3">
+      <div className="flex items-center gap-2 border-b border-emerald-200/60 pb-3 flex-wrap min-w-0">
         <button
           onClick={() => setActiveTab('inventory')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
             activeTab === 'inventory'
               ? 'bg-[#2d6a4f] text-white shadow-md'
               : 'text-emerald-900 bg-white hover:bg-emerald-50 border border-emerald-200'
           }`}
         >
-          <Layers className="w-3.5 h-3.5" /> Equipment Fleet ({equipments.length})
+          <Layers className="w-3.5 h-3.5 shrink-0" /> Equipment Fleet ({equipments.length})
         </button>
 
         <button
           onClick={() => setActiveTab('schedule')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
             activeTab === 'schedule'
               ? 'bg-[#2d6a4f] text-white shadow-md'
               : 'text-emerald-900 bg-white hover:bg-emerald-50 border border-emerald-200'
           }`}
         >
-          <Clock className="w-3.5 h-3.5" /> Maintenance Schedule & Logs ({maintenanceRecords.length})
+          <Clock className="w-3.5 h-3.5 shrink-0" /> Schedule & Service Logs ({maintenanceRecords.length})
         </button>
       </div>
 

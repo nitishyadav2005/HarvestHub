@@ -61,18 +61,18 @@ export const AssignCropModal: React.FC<AssignCropModalProps> = ({
 
         {/* Selected Crop Card Summary */}
         {selectedCrop && (
-          <div className="p-3.5 rounded-2xl bg-[#d8f3dc]/70 border border-[#74c69d]/40 space-y-1.5 text-xs text-[#1b4332]">
-            <div className="font-bold text-sm flex items-center justify-between">
-              <span>{selectedCrop.name}</span>
-              <span className="bg-white/70 px-2 py-0.5 rounded-md text-[11px]">
+          <div className="p-3.5 rounded-2xl bg-[#d8f3dc]/70 border border-[#74c69d]/40 space-y-1.5 text-xs text-[#1b4332] min-w-0">
+            <div className="font-bold text-sm flex items-center justify-between gap-2 flex-wrap min-w-0">
+              <span className="truncate">{selectedCrop.name}</span>
+              <span className="bg-white/70 px-2 py-0.5 rounded-md text-[11px] shrink-0 font-medium">
                 {selectedCrop.category}
               </span>
             </div>
-            <div className="grid grid-cols-2 gap-2 text-emerald-900 mt-2">
-              <div>Ideal Soil: <span className="font-semibold">{selectedCrop.idealSoil}</span></div>
-              <div>Growing Period: <span className="font-semibold">{selectedCrop.durationDays} Days</span></div>
-              <div>Water Requirement: <span className="font-semibold">{selectedCrop.waterRequirement}</span></div>
-              <div>Target Yield: <span className="font-semibold">{selectedCrop.expectedYieldPerAcreQuintal} Qtl/Acre</span></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-emerald-900 mt-2 min-w-0">
+              <div className="truncate">Ideal Soil: <span className="font-semibold">{selectedCrop.idealSoil}</span></div>
+              <div className="truncate">Growing Period: <span className="font-semibold">{selectedCrop.durationDays} Days</span></div>
+              <div className="truncate">Water Requirement: <span className="font-semibold">{selectedCrop.waterRequirement}</span></div>
+              <div className="truncate">Target Yield: <span className="font-semibold">{selectedCrop.expectedYieldPerAcreQuintal} Qtl/Acre</span></div>
             </div>
           </div>
         )}
@@ -125,11 +125,11 @@ export const AssignCropModal: React.FC<AssignCropModalProps> = ({
         </div>
 
         {/* Buttons */}
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-emerald-100">
-          <button type="button" onClick={onClose} className="clay-btn-secondary text-xs">
+        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-3 border-t border-emerald-100">
+          <button type="button" onClick={onClose} className="clay-btn-secondary text-xs py-2 px-4 cursor-pointer text-center">
             Cancel
           </button>
-          <button type="submit" className="clay-btn-primary text-xs">
+          <button type="submit" className="clay-btn-primary text-xs py-2 px-4 cursor-pointer justify-center">
             <Check className="w-4 h-4" /> Confirm Sowing & Assign
           </button>
         </div>

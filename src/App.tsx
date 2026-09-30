@@ -379,7 +379,7 @@ export function App() {
       />
 
       {/* Main Body */}
-      <div className="flex-1 max-w-7xl w-full mx-auto flex gap-4 p-4 md:p-6 lg:p-8">
+      <div className="flex-1 max-w-7xl w-full mx-auto flex flex-col lg:flex-row gap-4 sm:gap-6 p-3 sm:p-4 md:p-6 lg:p-8 pb-24 lg:pb-8 min-w-0">
         {/* Desktop & Mobile Drawer Sidebar Navigation */}
         <Sidebar
           activeTab={activeTab}
@@ -390,7 +390,7 @@ export function App() {
         />
 
         {/* Dynamic Content View */}
-        <main className="flex-1 min-w-0">
+        <main className="flex-1 min-w-0 w-full overflow-hidden">
           {activeTab === 'dashboard' && (
             <DashboardOverview
               fields={fields}

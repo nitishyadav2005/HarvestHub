@@ -34,6 +34,9 @@ export class HarvestHubDatabase extends Dexie {
       equipment: '++id, name, type, status, nextMaintenanceDate',
       maintenance: '++id, equipmentId, scheduledDate, status'
     });
+    this.version(3).stores({
+      operations: '++id, fieldId, operationType, status, operationDate, costInr'
+    });
   }
 }
 

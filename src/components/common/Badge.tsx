@@ -21,12 +21,12 @@ export const Badge: React.FC<BadgeProps> = ({
   };
 
   const sizes = {
-    sm: 'text-xs px-2.5 py-0.5 rounded-full font-medium',
-    md: 'text-xs md:text-sm px-3 py-1 rounded-full font-semibold'
+    sm: 'text-[11px] px-2 py-0.5 rounded-full font-medium',
+    md: 'text-xs md:text-sm px-2.5 py-0.5 md:px-3 md:py-1 rounded-full font-semibold'
   };
 
   return (
-    <span className={`inline-flex items-center gap-1 shadow-xs ${styles[variant]} ${sizes[size]}`}>
+    <span className={`inline-flex items-center gap-1 whitespace-nowrap shrink-0 max-w-full truncate shadow-xs ${styles[variant]} ${sizes[size]}`}>
       {children}
     </span>
   );

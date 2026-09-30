@@ -37,10 +37,15 @@ export async function initializeDatabase(forceReset = false): Promise<boolean> {
           shouldReseed = true;
         } else {
           // Detect outdated sample data with mismatched legacy fields or costs
-          const legacyField = await db.fields.where('name').equals('Narmada Basin South').first();
-          const malwaField = await db.fields.where('name').equals('Malwa Organic Patch').first();
-          const legacyOp = await db.operations.where('costInr').equals(2800).first();
-          if (legacyField || malwaField || legacyOp) {
+          try {
+            const legacyField = await db.fields.where('name').equals('Narmada Basin South').first();
+            const malwaField = await db.fields.where('name').equals('Malwa Organic Patch').first();
+            const legacyOp = await db.operations.filter((op) => op.costInr === 2800).first();
+            if (legacyField || malwaField || legacyOp) {
+              shouldReseed = true;
+            }
+          } catch (e) {
+            console.warn('Legacy data check exception, triggering reseed:', e);
             shouldReseed = true;
           }
         }

@@ -1,6 +1,10 @@
 @import "tailwindcss";
 
 @layer base {
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
   body {
     background-color: #f2f6f3;
     color: #1c2e24;
@@ -14,12 +18,22 @@
 /* Main raised clay card effect */
 .clay-card {
   background: #ffffff;
-  border-radius: 20px;
+  border-radius: 16px;
   box-shadow: 
-    8px 8px 18px rgba(166, 185, 172, 0.35),
-    -8px -8px 18px rgba(255, 255, 255, 0.95),
+    4px 4px 12px rgba(166, 185, 172, 0.28),
+    -4px -4px 12px rgba(255, 255, 255, 0.9),
     inset 0 0 0 1px rgba(255, 255, 255, 0.6);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (min-width: 640px) {
+  .clay-card {
+    border-radius: 20px;
+    box-shadow: 
+      8px 8px 18px rgba(166, 185, 172, 0.35),
+      -8px -8px 18px rgba(255, 255, 255, 0.95),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+  }
 }
 
 .clay-card-green {

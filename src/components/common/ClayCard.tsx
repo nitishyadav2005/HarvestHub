@@ -26,11 +26,14 @@ export const ClayCard: React.FC<ClayCardProps> = ({
   }
 
   const interactiveClass = interactive ? 'clay-card-interactive' : '';
+  // Check if caller specified custom padding
+  const hasCustomPadding = /\bp-\d|\bpx-|\bpy-/.test(className);
+  const defaultPadding = hasCustomPadding ? '' : 'p-4 sm:p-5';
 
   return (
     <div
       onClick={onClick}
-      className={`${baseClass} ${interactiveClass} ${className} p-5 transition-all duration-200`}
+      className={`${baseClass} ${interactiveClass} min-w-0 overflow-hidden ${defaultPadding} ${className} transition-all duration-200`}
     >
       {children}
     </div>

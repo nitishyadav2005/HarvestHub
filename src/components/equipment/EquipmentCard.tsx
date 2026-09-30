@@ -108,23 +108,23 @@ export const EquipmentCard: React.FC<EquipmentCardProps> = ({
   };
 
   return (
-    <ClayCard variant="white" className="border border-emerald-100 flex flex-col justify-between group">
-      <div>
+    <ClayCard variant="white" className="border border-emerald-100 flex flex-col justify-between group min-w-0">
+      <div className="min-w-0">
         {/* Header & Badges */}
-        <div className="flex items-start justify-between gap-2 mb-3">
-          <div className="flex items-start gap-2.5">
-            <div className="p-2.5 rounded-2xl bg-[#f2f6f3] border border-emerald-200/60 shadow-xs shrink-0 mt-0.5">
+        <div className="flex items-start justify-between gap-2 mb-3 min-w-0">
+          <div className="flex items-start gap-2.5 min-w-0 flex-1">
+            <div className="p-2 sm:p-2.5 rounded-2xl bg-[#f2f6f3] border border-emerald-200/60 shadow-xs shrink-0 mt-0.5">
               {getTypeIcon(equipment.type)}
             </div>
-            <div>
+            <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800">
                   {equipment.type}
                 </span>
                 <span className="text-emerald-300">•</span>
-                <span className="text-xs text-emerald-700 font-medium">{equipment.model}</span>
+                <span className="text-xs text-emerald-700 font-medium truncate max-w-[120px]">{equipment.model}</span>
               </div>
-              <h3 className="text-base font-bold text-[#1b4332] group-hover:text-[#2d6a4f] transition-colors leading-snug">
+              <h3 className="text-sm sm:text-base font-bold text-[#1b4332] group-hover:text-[#2d6a4f] transition-colors leading-snug truncate" title={equipment.name}>
                 {equipment.name}
               </h3>
             </div>
@@ -137,22 +137,22 @@ export const EquipmentCard: React.FC<EquipmentCardProps> = ({
         </div>
 
         {/* Maintenance Timelines & Specs */}
-        <div className="p-3.5 rounded-2xl bg-[#f8faf8] border border-emerald-100 space-y-2 text-xs mb-3">
-          <div className="flex items-center justify-between">
-            <span className="text-emerald-700 flex items-center gap-1 font-medium">
-              <Calendar className="w-3.5 h-3.5 text-emerald-600" /> Last Maintenance:
+        <div className="p-3 sm:p-3.5 rounded-2xl bg-[#f8faf8] border border-emerald-100 space-y-2 text-xs mb-3 min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-emerald-700 flex items-center gap-1 font-medium shrink-0">
+              <Calendar className="w-3.5 h-3.5 text-emerald-600 shrink-0" /> Last Serviced:
             </span>
-            <span className="font-semibold text-emerald-950">
+            <span className="font-semibold text-emerald-950 font-mono tabular-nums truncate text-right">
               {equipment.lastMaintenanceDate || 'None logged'}
             </span>
           </div>
 
-          <div className="flex items-center justify-between">
-            <span className="text-emerald-700 flex items-center gap-1 font-medium">
-              <Clock className="w-3.5 h-3.5 text-emerald-600" /> Next Maintenance:
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-emerald-700 flex items-center gap-1 font-medium shrink-0">
+              <Clock className="w-3.5 h-3.5 text-emerald-600 shrink-0" /> Next Due:
             </span>
             <span
-              className={`font-bold flex items-center gap-1 ${
+              className={`font-bold flex items-center gap-1 font-mono tabular-nums truncate text-right ${
                 maintStatus === 'Overdue'
                   ? 'text-red-700'
                   : maintStatus === 'Due Soon'
@@ -164,48 +164,48 @@ export const EquipmentCard: React.FC<EquipmentCardProps> = ({
             </span>
           </div>
 
-          <div className="flex items-center justify-between pt-1 border-t border-emerald-50 text-[11px]">
-            <span className="text-emerald-700">Interval: Every {equipment.maintenanceIntervalDays} days</span>
+          <div className="flex items-center justify-between pt-1 border-t border-emerald-50 text-[11px] gap-2">
+            <span className="text-emerald-700 truncate">Interval: {equipment.maintenanceIntervalDays} days</span>
             {equipment.maintenanceCostInr > 0 && (
-              <span className="font-bold text-[#1b4332] flex items-center">
-                <IndianRupee className="w-3 h-3 text-emerald-600" />
-                {equipment.maintenanceCostInr.toLocaleString('en-IN')} / service
+              <span className="font-bold text-[#1b4332] flex items-center shrink-0 font-mono tabular-nums">
+                <IndianRupee className="w-3 h-3 text-emerald-600 shrink-0" />
+                {equipment.maintenanceCostInr.toLocaleString('en-IN')}
               </span>
             )}
           </div>
         </div>
 
         {equipment.notes && (
-          <p className="text-xs text-emerald-800/80 italic line-clamp-2 mb-3 bg-emerald-50/50 p-2 rounded-xl">
+          <p className="text-xs text-emerald-800/80 italic line-clamp-2 mb-3 bg-emerald-50/50 p-2 rounded-xl border border-emerald-100/60 break-words">
             "{equipment.notes}"
           </p>
         )}
       </div>
 
       {/* Action Footer */}
-      <div className="pt-3 border-t border-emerald-100 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
+      <div className="pt-3 border-t border-emerald-100 flex items-center justify-between gap-1.5 sm:gap-2 min-w-0">
+        <div className="flex items-center gap-1.5 shrink-0">
           <button
             onClick={() => onView(equipment)}
-            className="px-2.5 py-1.5 rounded-xl bg-white hover:bg-emerald-50 text-emerald-900 border border-emerald-200 text-xs font-semibold flex items-center gap-1 transition-all shadow-xs"
+            className="px-2 sm:px-2.5 py-1.5 rounded-xl bg-white hover:bg-emerald-50 text-emerald-900 border border-emerald-200 text-xs font-semibold flex items-center gap-1 transition-all shadow-xs cursor-pointer whitespace-nowrap"
             title="View full specs and history"
           >
-            <Eye className="w-3.5 h-3.5 text-emerald-700" /> View
+            <Eye className="w-3.5 h-3.5 text-emerald-700 shrink-0" /> View
           </button>
 
           <button
             onClick={() => onScheduleMaintenance(equipment)}
-            className="px-2.5 py-1.5 rounded-xl bg-[#d8f3dc] hover:bg-[#b7e4c7] text-[#1b4332] border border-[#74c69d]/40 text-xs font-bold flex items-center gap-1 transition-all shadow-xs"
+            className="px-2 sm:px-2.5 py-1.5 rounded-xl bg-[#d8f3dc] hover:bg-[#b7e4c7] text-[#1b4332] border border-[#74c69d]/40 text-xs font-bold flex items-center gap-1 transition-all shadow-xs cursor-pointer whitespace-nowrap"
             title="Schedule new maintenance"
           >
-            <Calendar className="w-3.5 h-3.5 text-[#2d6a4f]" /> Schedule
+            <Calendar className="w-3.5 h-3.5 text-[#2d6a4f] shrink-0" /> Service
           </button>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 shrink-0 ml-auto">
           <button
             onClick={() => onEdit(equipment)}
-            className="p-1.5 text-emerald-800 hover:bg-emerald-100 rounded-lg transition-colors"
+            className="p-1.5 text-emerald-800 hover:bg-emerald-100 rounded-lg transition-colors cursor-pointer"
             title="Edit Equipment"
           >
             <Edit className="w-4 h-4" />
@@ -213,7 +213,7 @@ export const EquipmentCard: React.FC<EquipmentCardProps> = ({
           {equipment.id && (
             <button
               onClick={() => onDelete(equipment.id!)}
-              className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
               title="Delete Equipment"
             >
               <Trash2 className="w-4 h-4" />

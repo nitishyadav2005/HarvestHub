@@ -273,17 +273,17 @@ export const EquipmentFormModal: React.FC<EquipmentFormModalProps> = ({
         </div>
 
         {/* Form Actions */}
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-emerald-100">
+        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-3 border-t border-emerald-100">
           <button
             type="button"
             onClick={onClose}
-            className="clay-btn-secondary text-xs py-2 px-4"
+            className="clay-btn-secondary text-xs py-2 px-4 cursor-pointer text-center"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="clay-btn-primary text-xs py-2 px-5"
+            className="clay-btn-primary text-xs py-2 px-5 cursor-pointer justify-center"
           >
             <Check className="w-4 h-4" /> {initialData ? 'Update Machine' : 'Save Equipment'}
           </button>

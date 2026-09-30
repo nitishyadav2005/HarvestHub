@@ -41,27 +41,27 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} maxWidth="sm">
       <div className="space-y-4">
-        <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/80">
+        <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/80 min-w-0">
           <div className="p-2 rounded-xl bg-amber-100 text-amber-800 shrink-0">
             <AlertTriangle className="w-5 h-5 text-amber-700" />
           </div>
-          <p className="text-xs text-amber-950 font-medium leading-relaxed pt-1">
+          <p className="text-xs text-amber-950 font-medium leading-relaxed pt-1 break-words min-w-0 flex-1">
             {message}
           </p>
         </div>
 
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-emerald-100">
+        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-2 border-t border-emerald-100">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-white hover:bg-gray-100 text-gray-700 font-semibold text-xs border border-gray-200 transition-all cursor-pointer"
+            className="px-4 py-2 rounded-xl bg-white hover:bg-gray-100 text-gray-700 font-semibold text-xs border border-gray-200 transition-all cursor-pointer text-center"
           >
             {cancelText}
           </button>
           <button
             type="button"
             onClick={handleConfirm}
-            className={getConfirmButtonClass()}
+            className={`${getConfirmButtonClass()} justify-center`}
           >
             <Check className="w-3.5 h-3.5" /> {confirmText}
           </button>

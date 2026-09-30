@@ -47,24 +47,24 @@ export const EquipmentMaintenanceWidget: React.FC<EquipmentMaintenanceWidgetProp
 
   return (
     <ClayCard variant="white" className="border border-emerald-100 flex flex-col h-full">
-      <div className="flex items-center justify-between pb-3 border-b border-emerald-100 mb-4">
-        <div>
-          <h3 className="text-lg font-bold text-[#1b4332] flex items-center gap-2">
-            <Wrench className="w-5 h-5 text-[#2d6a4f]" /> Equipment Maintenance
+      <div className="flex items-center justify-between pb-3 border-b border-emerald-100 mb-4 min-w-0">
+        <div className="min-w-0 flex-1">
+          <h3 className="text-base sm:text-lg font-bold text-[#1b4332] flex items-center gap-2 truncate">
+            <Wrench className="w-4 h-4 sm:w-5 sm:h-5 text-[#2d6a4f] shrink-0" /> Equipment Maintenance
           </h3>
-          <p className="text-xs text-emerald-800/80">
+          <p className="text-xs text-emerald-800/80 truncate">
             Machinery service schedules, due dates & completed logs
           </p>
         </div>
         <button
           onClick={onNavigateToEquipment}
-          className="text-xs font-semibold text-[#2d6a4f] hover:text-[#1b4332] flex items-center gap-1 transition-colors"
+          className="text-xs font-semibold text-[#2d6a4f] hover:text-[#1b4332] flex items-center gap-1 transition-colors shrink-0 cursor-pointer ml-2"
         >
           View Fleet <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>
 
-      <div className="flex-1 space-y-3">
+      <div className="flex-1 space-y-3 min-w-0">
         {displayList.length === 0 ? (
           <div className="text-center py-8 text-emerald-700 text-sm">
             <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2 opacity-70" />
@@ -79,27 +79,27 @@ export const EquipmentMaintenanceWidget: React.FC<EquipmentMaintenanceWidgetProp
               if (status === 'Overdue') {
                 return (
                   <Badge variant="red" size="sm">
-                    <AlertTriangle className="w-3 h-3 text-red-700 mr-0.5" /> Overdue
+                    <AlertTriangle className="w-3 h-3 text-red-700 mr-0.5 shrink-0" /> Overdue
                   </Badge>
                 );
               }
               if (status === 'Due Soon') {
                 return (
                   <Badge variant="amber" size="sm">
-                    <AlertCircle className="w-3 h-3 text-amber-800 mr-0.5" /> Due Soon
+                    <AlertCircle className="w-3 h-3 text-amber-800 mr-0.5 shrink-0" /> Due Soon
                   </Badge>
                 );
               }
               if (status === 'Completed') {
                 return (
                   <Badge variant="mint" size="sm">
-                    <CheckCircle2 className="w-3 h-3 text-emerald-700 mr-0.5" /> Completed
+                    <CheckCircle2 className="w-3 h-3 text-emerald-700 mr-0.5 shrink-0" /> Completed
                   </Badge>
                 );
               }
               return (
                 <Badge variant="green" size="sm">
-                  <Clock className="w-3 h-3 text-emerald-800 mr-0.5" /> Upcoming
+                  <Clock className="w-3 h-3 text-emerald-800 mr-0.5 shrink-0" /> Upcoming
                 </Badge>
               );
             };
@@ -107,7 +107,7 @@ export const EquipmentMaintenanceWidget: React.FC<EquipmentMaintenanceWidgetProp
             return (
               <div
                 key={rec.id}
-                className={`p-3.5 rounded-2xl border transition-all flex items-center justify-between gap-3 shadow-xs ${
+                className={`p-3 sm:p-3.5 rounded-2xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 shadow-xs min-w-0 ${
                   status === 'Overdue'
                     ? 'bg-red-50/40 border-red-200 hover:border-red-300'
                     : status === 'Due Soon'
@@ -116,26 +116,26 @@ export const EquipmentMaintenanceWidget: React.FC<EquipmentMaintenanceWidgetProp
                 }`}
               >
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  <div className="flex items-center gap-1.5 mb-1 flex-wrap">
                     {getBadge()}
-                    <span className="text-xs font-semibold text-emerald-900 truncate">
-                      Equipment: <span className="font-bold text-[#1b4332]">{rec.equipmentName}</span>
+                    <span className="text-xs font-semibold text-emerald-900 truncate max-w-[200px]">
+                      Machine: <span className="font-bold text-[#1b4332]">{rec.equipmentName}</span>
                     </span>
                   </div>
 
-                  <h4 className="text-sm font-bold text-gray-900 truncate">
-                    Maintenance: {rec.maintenanceTask}
+                  <h4 className="text-xs sm:text-sm font-bold text-gray-900 truncate">
+                    {rec.maintenanceTask}
                   </h4>
 
-                  <div className="flex items-center gap-3 mt-1.5 text-xs text-emerald-800">
-                    <span className="flex items-center gap-1 font-medium">
-                      <Calendar className="w-3.5 h-3.5 text-emerald-600" />
+                  <div className="flex items-center gap-3 mt-1.5 text-xs text-emerald-800 flex-wrap">
+                    <span className="flex items-center gap-1 font-medium font-mono tabular-nums">
+                      <Calendar className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                       {isCompleted
                         ? `Completed: ${rec.completedDate || rec.scheduledDate}`
                         : `Due: ${rec.scheduledDate}`}
                     </span>
                     {rec.costInr > 0 && (
-                      <span className="font-semibold text-emerald-950">
+                      <span className="font-semibold text-emerald-950 font-mono tabular-nums">
                         ₹{rec.costInr.toLocaleString('en-IN')}
                       </span>
                     )}
@@ -145,7 +145,7 @@ export const EquipmentMaintenanceWidget: React.FC<EquipmentMaintenanceWidgetProp
                 {!isCompleted && rec.id && (
                   <button
                     onClick={() => onCompleteMaintenance(rec.id!)}
-                    className="px-3 py-1.5 rounded-xl bg-[#d8f3dc] hover:bg-[#b7e4c7] text-[#1b4332] text-xs font-bold border border-[#74c69d]/40 flex items-center gap-1 transition-all shrink-0 shadow-xs"
+                    className="px-3 py-1.5 rounded-xl bg-[#d8f3dc] hover:bg-[#b7e4c7] text-[#1b4332] text-xs font-bold border border-[#74c69d]/40 flex items-center justify-center gap-1 transition-all shrink-0 shadow-xs cursor-pointer self-end sm:self-center"
                     title="Mark as completed"
                   >
                     <CheckCircle2 className="w-3.5 h-3.5 text-[#2d6a4f]" /> Done

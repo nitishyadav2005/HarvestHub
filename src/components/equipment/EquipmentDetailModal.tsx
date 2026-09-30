@@ -51,22 +51,22 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
       subtitle={`${equipment.type} • ${equipment.model}`}
       maxWidth="xl"
     >
-      <div className="space-y-5">
+      <div className="space-y-4 sm:space-y-5 min-w-0">
         {/* Status Alert Banner */}
         {maintStatus === 'Overdue' && (
-          <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200 flex items-start justify-between gap-3">
-            <div className="flex items-start gap-2">
+          <div className="p-3 sm:p-3.5 rounded-2xl bg-red-50 border border-red-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-w-0">
+            <div className="flex items-start gap-2.5 min-w-0 flex-1">
               <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-              <div>
-                <h4 className="text-xs font-bold text-red-900">Maintenance Overdue</h4>
-                <p className="text-[11px] text-red-700">
+              <div className="min-w-0">
+                <h4 className="text-xs font-bold text-red-900 truncate">Maintenance Overdue</h4>
+                <p className="text-[11px] text-red-700 leading-snug break-words">
                   Scheduled service was due on {equipment.nextMaintenanceDate}. Service required to prevent downtime.
                 </p>
               </div>
             </div>
             <button
               onClick={() => onOpenSchedule(equipment)}
-              className="clay-btn-primary text-xs py-1.5 px-3 shrink-0"
+              className="clay-btn-primary text-xs py-1.5 px-3 shrink-0 self-end sm:self-center cursor-pointer"
             >
               Service Now
             </button>
@@ -74,19 +74,19 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
         )}
 
         {maintStatus === 'Due Soon' && (
-          <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 flex items-start justify-between gap-3">
-            <div className="flex items-start gap-2">
+          <div className="p-3 sm:p-3.5 rounded-2xl bg-amber-50 border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-w-0">
+            <div className="flex items-start gap-2.5 min-w-0 flex-1">
               <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-              <div>
-                <h4 className="text-xs font-bold text-amber-900">Maintenance Due Soon</h4>
-                <p className="text-[11px] text-amber-800">
+              <div className="min-w-0">
+                <h4 className="text-xs font-bold text-amber-900 truncate">Maintenance Due Soon</h4>
+                <p className="text-[11px] text-amber-800 leading-snug break-words">
                   Scheduled service due on {equipment.nextMaintenanceDate}. Prepare parts and lubricant.
                 </p>
               </div>
             </div>
             <button
               onClick={() => onOpenSchedule(equipment)}
-              className="clay-btn-primary text-xs py-1.5 px-3 shrink-0"
+              className="clay-btn-primary text-xs py-1.5 px-3 shrink-0 self-end sm:self-center cursor-pointer"
             >
               Schedule
             </button>
@@ -167,38 +167,38 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
                 {pendingRecords.map((rec) => (
                   <div
                     key={rec.id}
-                    className="p-3 rounded-2xl bg-white border border-emerald-200 flex items-center justify-between gap-3 shadow-xs"
+                    className="p-3 rounded-2xl bg-white border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 shadow-xs min-w-0"
                   >
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 sm:gap-2 mb-1 flex-wrap">
                         <Badge
                           variant={rec.status === 'Overdue' ? 'red' : rec.status === 'Due Soon' ? 'amber' : 'green'}
                           size="sm"
                         >
                           {rec.status}
                         </Badge>
-                        <span className="text-xs font-bold text-emerald-950">{rec.maintenanceTask}</span>
+                        <span className="text-xs font-bold text-emerald-950 truncate max-w-[200px]">{rec.maintenanceTask}</span>
                       </div>
                       <div className="flex items-center gap-3 text-xs text-emerald-800 flex-wrap">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3 text-emerald-600" /> Scheduled: {rec.scheduledDate}
+                        <span className="flex items-center gap-1 font-mono tabular-nums">
+                          <Calendar className="w-3 h-3 text-emerald-600 shrink-0" /> Due: {rec.scheduledDate}
                         </span>
                         {rec.costInr > 0 && (
-                          <span className="font-semibold text-emerald-950 flex items-center">
-                            <IndianRupee className="w-3 h-3 text-emerald-600" />
+                          <span className="font-semibold text-emerald-950 flex items-center font-mono tabular-nums">
+                            <IndianRupee className="w-3 h-3 text-emerald-600 shrink-0" />
                             {rec.costInr.toLocaleString('en-IN')}
                           </span>
                         )}
-                        {rec.serviceProvider && <span>Provider: {rec.serviceProvider}</span>}
+                        {rec.serviceProvider && <span className="truncate max-w-[150px]">Provider: {rec.serviceProvider}</span>}
                       </div>
                     </div>
 
                     {rec.id && (
                       <button
                         onClick={() => onCompleteMaintenance(rec.id!)}
-                        className="px-3 py-1.5 rounded-xl bg-[#d8f3dc] hover:bg-[#b7e4c7] text-[#1b4332] text-xs font-bold border border-[#74c69d]/40 flex items-center gap-1 transition-all shrink-0 shadow-xs"
+                        className="px-3 py-1.5 rounded-xl bg-[#d8f3dc] hover:bg-[#b7e4c7] text-[#1b4332] text-xs font-bold border border-[#74c69d]/40 flex items-center gap-1 transition-all shrink-0 shadow-xs cursor-pointer self-end sm:self-center"
                       >
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[#2d6a4f]" /> Complete
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#2d6a4f] shrink-0" /> Complete
                       </button>
                     )}
                   </div>
@@ -210,7 +210,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
           {/* Completed History */}
           <div className="space-y-2 pt-2">
             <span className="text-xs font-bold text-emerald-900 flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" /> Service History Log ({completedRecords.length})
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-700 shrink-0" /> Service History Log ({completedRecords.length})
             </span>
 
             {completedRecords.length === 0 ? (
@@ -222,21 +222,21 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
                 {completedRecords.map((rec) => (
                   <div
                     key={rec.id}
-                    className="p-3 rounded-2xl bg-[#f8faf8] border border-emerald-100 flex items-center justify-between gap-3 text-xs"
+                    className="p-3 rounded-2xl bg-[#f8faf8] border border-emerald-100 flex flex-col sm:flex-row sm:items-start justify-between gap-2 text-xs min-w-0"
                   >
-                    <div>
-                      <div className="flex items-center gap-2 mb-0.5">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 flex-wrap">
                         <Badge variant="mint" size="sm">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-700" /> Completed
+                          <CheckCircle2 className="w-3 h-3 text-emerald-700 mr-0.5 shrink-0" /> Completed
                         </Badge>
-                        <span className="font-bold text-emerald-950">{rec.maintenanceTask}</span>
+                        <span className="font-bold text-emerald-950 truncate max-w-[220px]">{rec.maintenanceTask}</span>
                       </div>
-                      <div className="text-emerald-800 text-[11px] flex items-center gap-3">
-                        <span>Completed on: {rec.completedDate || rec.scheduledDate}</span>
-                        {rec.costInr > 0 && <span>Cost: ₹{rec.costInr.toLocaleString('en-IN')}</span>}
-                        {rec.serviceProvider && <span>By: {rec.serviceProvider}</span>}
+                      <div className="text-emerald-800 text-[11px] flex items-center gap-3 flex-wrap">
+                        <span className="font-mono tabular-nums">Completed: {rec.completedDate || rec.scheduledDate}</span>
+                        {rec.costInr > 0 && <span className="font-mono tabular-nums">Cost: ₹{rec.costInr.toLocaleString('en-IN')}</span>}
+                        {rec.serviceProvider && <span className="truncate max-w-[150px]">By: {rec.serviceProvider}</span>}
                       </div>
-                      {rec.notes && <p className="text-emerald-700 italic mt-1 text-[11px]">"{rec.notes}"</p>}
+                      {rec.notes && <p className="text-emerald-700 italic mt-1 text-[11px] break-words">"{rec.notes}"</p>}
                     </div>
                   </div>
                 ))}

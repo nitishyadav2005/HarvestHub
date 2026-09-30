@@ -89,29 +89,29 @@ export const FieldManagement: React.FC<FieldManagementProps> = ({
   return (
     <div className="space-y-6 animate-fadeIn pb-12">
       {/* Top Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-black text-[#1b4332] flex items-center gap-2">
-            <LandPlot className="w-6 h-6 text-[#2d6a4f]" /> Field & Crop Management
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-w-0">
+        <div className="min-w-0">
+          <h2 className="text-xl sm:text-2xl font-black text-[#1b4332] flex items-center gap-2 truncate">
+            <LandPlot className="w-5 h-5 sm:w-6 sm:h-6 text-[#2d6a4f] shrink-0" /> Field & Crop Management
           </h2>
-          <p className="text-xs text-emerald-800/80 font-medium">
+          <p className="text-xs text-emerald-800/80 font-medium truncate">
             Register land plots, soil classifications, and assign active crop cycles
           </p>
         </div>
 
-        <button onClick={handleOpenAdd} className="clay-btn-primary text-sm">
+        <button onClick={handleOpenAdd} className="clay-btn-primary text-xs sm:text-sm py-2 px-3.5 shrink-0 cursor-pointer self-start sm:self-auto">
           <Plus className="w-4 h-4" /> Add New Farm Plot
         </button>
       </div>
 
       {/* Filter & Search Toolbar */}
-      <div className="clay-card p-4 border border-emerald-100 grid grid-cols-1 md:grid-cols-4 gap-3">
+      <div className="clay-card p-3.5 sm:p-4 border border-emerald-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 min-w-0">
         {/* Search */}
-        <div className="md:col-span-2 relative">
+        <div className="sm:col-span-2 relative min-w-0">
           <Search className="w-4 h-4 absolute left-3.5 top-3 text-emerald-700" />
           <input
             type="text"
-            placeholder="Search fields by name, code, or active crop..."
+            placeholder="Search by plot name, code, or active crop..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full clay-inset-white pl-10 pr-4 py-2 text-xs font-semibold text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-xl"

@@ -67,17 +67,17 @@ export const RotationPlanner: React.FC<RotationPlannerProps> = ({
   return (
     <div className="space-y-6 animate-fadeIn pb-12">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-black text-[#1b4332] flex items-center gap-2">
-            <RotateCw className="w-6 h-6 text-[#2d6a4f]" /> Crop Rotation Planner
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-w-0">
+        <div className="min-w-0">
+          <h2 className="text-xl sm:text-2xl font-black text-[#1b4332] flex items-center gap-2 truncate">
+            <RotateCw className="w-5 h-5 sm:w-6 sm:h-6 text-[#2d6a4f] shrink-0" /> Crop Rotation Planner
           </h2>
-          <p className="text-xs text-emerald-800/80 font-medium">
+          <p className="text-xs text-emerald-800/80 font-medium truncate">
             Maintain crop succession history (Previous ➔ Current ➔ Next Planned) & optimize soil fertility
           </p>
         </div>
 
-        <button onClick={handleOpenAdd} className="clay-btn-primary text-sm">
+        <button onClick={handleOpenAdd} className="clay-btn-primary text-xs sm:text-sm py-2 px-3.5 shrink-0 cursor-pointer self-start sm:self-auto">
           <Plus className="w-4 h-4" /> Plan Next Rotation
         </button>
       </div>
@@ -89,16 +89,16 @@ export const RotationPlanner: React.FC<RotationPlannerProps> = ({
       />
 
       {/* Search & Header */}
-      <div className="clay-card p-4 border border-emerald-100 flex flex-col md:flex-row items-center justify-between gap-3">
-        <h3 className="text-base font-bold text-[#1b4332] flex items-center gap-2">
-          <Sprout className="w-5 h-5 text-[#2d6a4f]" /> Rotation History & Pipeline ({filteredRotations.length})
+      <div className="clay-card p-3.5 sm:p-4 border border-emerald-100 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 min-w-0">
+        <h3 className="text-sm sm:text-base font-bold text-[#1b4332] flex items-center gap-2 truncate">
+          <Sprout className="w-4 h-4 sm:w-5 sm:h-5 text-[#2d6a4f] shrink-0" /> Rotation History & Pipeline ({filteredRotations.length})
         </h3>
 
-        <div className="relative w-full md:w-72">
+        <div className="relative w-full md:w-72 min-w-0">
           <Search className="w-4 h-4 absolute left-3.5 top-3 text-emerald-700" />
           <input
             type="text"
-            placeholder="Search rotation plans by crop or field..."
+            placeholder="Search by crop or plot name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full clay-inset-white pl-10 pr-4 py-2 text-xs font-semibold text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-xl"

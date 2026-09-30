@@ -82,22 +82,22 @@ export const FieldDetailModal: React.FC<FieldDetailModalProps> = ({
         </div>
 
         {/* Financial Quick Breakdown */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-center">
-            <span className="text-[11px] font-bold text-amber-900 uppercase">Field Expenses</span>
-            <div className="text-base md:text-lg font-black text-amber-950 mt-0.5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
+          <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-center min-w-0">
+            <span className="text-[11px] font-bold text-amber-900 uppercase block truncate">Field Expenses</span>
+            <div className="text-base md:text-lg font-black text-amber-950 mt-0.5 truncate font-mono tabular-nums">
               ₹{totalExpense.toLocaleString('en-IN')}
             </div>
           </div>
-          <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-center">
-            <span className="text-[11px] font-bold text-[#1b4332] uppercase">Harvest Revenue</span>
-            <div className="text-base md:text-lg font-black text-[#1b4332] mt-0.5">
+          <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-center min-w-0">
+            <span className="text-[11px] font-bold text-[#1b4332] uppercase block truncate">Harvest Revenue</span>
+            <div className="text-base md:text-lg font-black text-[#1b4332] mt-0.5 truncate font-mono tabular-nums">
               ₹{totalRevenue.toLocaleString('en-IN')}
             </div>
           </div>
-          <div className="p-3 rounded-2xl bg-[#d8f3dc] border border-[#74c69d] text-center">
-            <span className="text-[11px] font-bold text-[#1b4332] uppercase">Net Profit</span>
-            <div className="text-base md:text-lg font-black text-[#1b4332] mt-0.5">
+          <div className="p-3 rounded-2xl bg-[#d8f3dc] border border-[#74c69d] text-center min-w-0">
+            <span className="text-[11px] font-bold text-[#1b4332] uppercase block truncate">Net Profit</span>
+            <div className="text-base md:text-lg font-black text-[#1b4332] mt-0.5 truncate font-mono tabular-nums">
               ₹{netProfit.toLocaleString('en-IN')}
             </div>
           </div>
@@ -105,19 +105,19 @@ export const FieldDetailModal: React.FC<FieldDetailModalProps> = ({
 
         {/* Crop Rotation History */}
         {fieldRotations.length > 0 && (
-          <div className="space-y-2">
+          <div className="space-y-2 min-w-0">
             <h4 className="text-sm font-bold text-[#1b4332] flex items-center gap-1.5">
-              <RotateCw className="w-4 h-4 text-[#2d6a4f]" /> Crop Rotation Lifecycle
+              <RotateCw className="w-4 h-4 text-[#2d6a4f] shrink-0" /> Crop Rotation Lifecycle
             </h4>
-            <div className="p-3.5 rounded-2xl bg-[#f8faf8] border border-emerald-100 space-y-2 text-xs">
+            <div className="p-3.5 rounded-2xl bg-[#f8faf8] border border-emerald-100 space-y-2 text-xs min-w-0">
               {fieldRotations.map((r) => (
-                <div key={r.id} className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-emerald-100 pb-2 last:border-0 last:pb-0">
-                  <div className="flex items-center gap-2 font-semibold">
-                    <span className="text-emerald-700">{r.previousCrop}</span>
-                    <span className="text-emerald-400 font-bold">➔</span>
-                    <span className="text-[#2d6a4f] font-bold">{r.currentCrop}</span>
-                    <span className="text-emerald-400 font-bold">➔</span>
-                    <span className="text-emerald-950">{r.nextPlannedCrop}</span>
+                <div key={r.id} className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-emerald-100 pb-2 last:border-0 last:pb-0 min-w-0">
+                  <div className="flex items-center gap-1.5 sm:gap-2 font-semibold flex-wrap min-w-0">
+                    <span className="text-emerald-700 truncate">{r.previousCrop}</span>
+                    <span className="text-emerald-400 font-bold shrink-0">➔</span>
+                    <span className="text-[#2d6a4f] font-bold truncate">{r.currentCrop}</span>
+                    <span className="text-emerald-400 font-bold shrink-0">➔</span>
+                    <span className="text-emerald-950 truncate">{r.nextPlannedCrop}</span>
                   </div>
                   <Badge variant="green" size="sm">
                     {r.soilHealthImpact} Soil Impact
@@ -129,31 +129,31 @@ export const FieldDetailModal: React.FC<FieldDetailModalProps> = ({
         )}
 
         {/* Field Operations Timeline */}
-        <div className="space-y-2">
-          <h4 className="text-sm font-bold text-[#1b4332] flex items-center gap-1.5">
-            <ClipboardList className="w-4 h-4 text-[#2d6a4f]" /> Operations Journal ({fieldOps.length})
+        <div className="space-y-2 min-w-0">
+          <h4 className="text-sm font-bold text-[#1b4332] flex items-center gap-1.5 truncate">
+            <ClipboardList className="w-4 h-4 text-[#2d6a4f] shrink-0" /> Operations Journal ({fieldOps.length})
           </h4>
           {fieldOps.length === 0 ? (
             <p className="text-xs text-emerald-700 italic">No operations recorded for this field yet.</p>
           ) : (
-            <div className="space-y-2 max-h-44 overflow-y-auto pr-1">
+            <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
               {fieldOps.map((op) => (
                 <div
                   key={op.id}
-                  className="p-3 rounded-xl bg-white border border-emerald-100 flex items-center justify-between gap-2 text-xs shadow-xs"
+                  className="p-3 rounded-xl bg-white border border-emerald-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs shadow-xs min-w-0"
                 >
-                  <div>
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span className="font-bold text-emerald-950">{op.title}</span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 flex-wrap">
+                      <span className="font-bold text-emerald-950 truncate max-w-[200px]">{op.title}</span>
                       <Badge variant={op.status === 'Completed' ? 'green' : 'amber'} size="sm">
                         {op.status}
                       </Badge>
                     </div>
-                    <p className="text-emerald-700">{op.materialDetails || op.notes || 'Routine operation'}</p>
+                    <p className="text-emerald-700 truncate">{op.materialDetails || op.notes || 'Routine operation'}</p>
                   </div>
-                  <div className="text-right shrink-0">
-                    <div className="font-bold text-emerald-900">{op.operationDate}</div>
-                    {op.costInr > 0 && <div className="text-emerald-800 font-medium">₹{op.costInr}</div>}
+                  <div className="text-left sm:text-right shrink-0">
+                    <div className="font-bold text-emerald-900 font-mono tabular-nums">{op.operationDate}</div>
+                    {op.costInr > 0 && <div className="text-emerald-800 font-medium font-mono tabular-nums">₹{op.costInr.toLocaleString('en-IN')}</div>}
                   </div>
                 </div>
               ))}
@@ -163,9 +163,9 @@ export const FieldDetailModal: React.FC<FieldDetailModalProps> = ({
 
         {/* Field Soil & Infrastructure Notes */}
         {field.notes && (
-          <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 text-xs">
+          <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 text-xs min-w-0">
             <span className="font-bold text-[#1b4332] block mb-1">Field Journal Notes & Soil Conditioning</span>
-            <p className="text-emerald-900 leading-relaxed">{field.notes}</p>
+            <p className="text-emerald-900 leading-relaxed break-words">{field.notes}</p>
           </div>
         )}
       </div>

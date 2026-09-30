@@ -43,21 +43,21 @@ export const Modal: React.FC<ModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-emerald-950/40 backdrop-blur-sm animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-emerald-950/40 backdrop-blur-sm animate-fadeIn">
       <div
-        className={`w-full ${widthClasses[maxWidth]} clay-card p-6 md:p-8 max-h-[90vh] overflow-y-auto relative border border-emerald-100 shadow-2xl`}
+        className={`w-full ${widthClasses[maxWidth]} clay-card p-4 sm:p-6 md:p-8 max-h-[92vh] overflow-y-auto relative border border-emerald-100 shadow-2xl`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-start justify-between mb-4 pb-3 border-b border-emerald-100">
-          <div>
-            <h2 className="text-xl md:text-2xl font-bold text-[#1b4332] flex items-center gap-2">
+        <div className="flex items-start justify-between gap-3 mb-4 pb-3 border-b border-emerald-100">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-[#1b4332] flex items-center gap-2 truncate">
               {title}
             </h2>
-            {subtitle && <p className="text-xs md:text-sm text-emerald-700/80 mt-1">{subtitle}</p>}
+            {subtitle && <p className="text-xs md:text-sm text-emerald-700/80 mt-1 break-words">{subtitle}</p>}
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-emerald-800 hover:bg-emerald-100/60 rounded-full transition-colors"
+            className="p-1.5 sm:p-2 text-emerald-800 hover:bg-emerald-100/60 rounded-full transition-colors shrink-0"
             title="Close modal"
           >
             <X className="w-5 h-5" />
