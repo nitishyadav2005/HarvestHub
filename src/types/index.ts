@@ -71,7 +71,7 @@ export interface User {
   createdAt: string;
   // Compatibility properties for auth responses
   success?: boolean;
-  message?: string;
+  message: string;
   error?: string;
   session?: UserSession;
 }

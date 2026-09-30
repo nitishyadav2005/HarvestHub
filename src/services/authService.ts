@@ -8,7 +8,8 @@ export const DEFAULT_DEMO_USER: Omit<User, 'id'> = {
   email: 'farmer@example.com',
   password: 'password123',
   farmName: 'Green Valley Farm',
-  createdAt: '2026-01-01T08:00:00.000Z'
+  createdAt: '2026-01-01T08:00:00.000Z',
+  message: 'Success'
 };
 
 export interface IAuthService {
@@ -133,7 +134,8 @@ export class IndexedDBAuthService implements IAuthService {
       email,
       password,
       farmName,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      message: 'Account created successfully.'
     };
 
     const id = await db.users.add(newUser as User);
