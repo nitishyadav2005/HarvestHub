@@ -48,16 +48,32 @@ export type ExpenseCategory =
   | 'Transportation & Mandi Fee' 
   | 'Miscellaneous';
 
+export type CanonicalExpenseCategory = ExpenseCategory;
+
 export type YieldQualityGrade = 'Grade A (Premium)' | 'Grade B (Standard)' | 'Grade C (Fair)';
 
 // User & Authentication Entities
-export interface User {
-  id?: number;
+export interface UserSession {
+  userId: number;
   fullName: string;
   email: string;
-  password: string;
+  farmName: string;
+  token?: string;
+}
+
+export interface User {
+  id?: number;
+  userId?: number;
+  fullName: string;
+  email: string;
+  password?: string;
   farmName: string;
   createdAt: string;
+  // Compatibility properties for auth responses
+  success?: boolean;
+  message?: string;
+  error?: string;
+  session?: UserSession;
 }
 
 // Database Entities
@@ -152,6 +168,8 @@ export interface Expense {
   category: ExpenseCategory;
   description: string;
   amountInr: number;
+  amount?: number; // Compatibility alias for amountInr
+  cropId?: number; // Compatibility alias
   date: string;
   paymentMethod: 'Cash' | 'UPI' | 'Bank Transfer' | 'Credit / Udhar';
   receiptNumber?: string;
@@ -221,6 +239,11 @@ export interface FarmFinancialSummary {
   roiPercentage: number;
   expensesByCategory: ExpenseCategorySummary[];
   cropWiseProfitability: CropProfitabilitySummary[];
+  // Compatibility properties
+  totalYieldFormatted?: string;
+  totalExpensesFormatted?: string;
+  totalRevenueFormatted?: string;
+  netProfitFormatted?: string;
 }
 
 // Equipment & Maintenance Module

@@ -61,8 +61,8 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
 
   // Demo user quick-fill helper
   const handleFillDemoCredentials = () => {
-    setLoginEmail(DEFAULT_DEMO_USER.email);
-    setLoginPassword(DEFAULT_DEMO_USER.password);
+    setLoginEmail(DEFAULT_DEMO_USER.email || '');
+    setLoginPassword(DEFAULT_DEMO_USER.password || '');
     setLoginError(null);
   };
 
