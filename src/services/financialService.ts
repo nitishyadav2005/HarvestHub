@@ -165,7 +165,11 @@ export class IndexedDBFinancialService implements IFinancialService {
 export const financialService: IFinancialService = new IndexedDBFinancialService();
 
 // Export computeFinancialSummary compatibility function
-export function computeFinancialSummary(expenses: Expense[], yields: YieldRecord[]): FarmFinancialSummary {
+export function computeFinancialSummary(
+  expenses: Expense[],
+  yields: YieldRecord[],
+  _extraParam?: any
+): FarmFinancialSummary {
   const totalExpensesInr = expenses.reduce((sum, e) => sum + (e.amountInr || e.amount || 0), 0);
   const totalRevenueInr = yields.reduce((sum, y) => sum + (y.totalRevenueInr || 0), 0);
   const netProfitInr = totalRevenueInr - totalExpensesInr;

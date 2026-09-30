@@ -12,7 +12,7 @@ export const DEFAULT_DEMO_USER: Omit<User, 'id'> = {
 };
 
 export interface IAuthService {
-  initAuth?(): Promise<User | null>;
+  initAuth(): Promise<User | null>;
   getCurrentUser(): Promise<User | null>;
   getCurrentUserId(): number | null;
   login(email: string, password: string): Promise<User>;
