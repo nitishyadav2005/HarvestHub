@@ -4,7 +4,8 @@ import {
   Grid,
   RotateCw,
   ClipboardList,
-  IndianRupee
+  IndianRupee,
+  Wrench
 } from 'lucide-react';
 
 interface MobileNavProps {
@@ -21,7 +22,8 @@ export const MobileNav: React.FC<MobileNavProps> = ({
     { id: 'fields', label: 'Fields', icon: Grid },
     { id: 'rotation', label: 'Rotation', icon: RotateCw },
     { id: 'operations', label: 'Operations', icon: ClipboardList },
-    { id: 'finances', label: 'Finances', icon: IndianRupee }
+    { id: 'finances', label: 'Finances', icon: IndianRupee },
+    { id: 'equipment', label: 'Equipment', icon: Wrench }
   ];
 
   return (

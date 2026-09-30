@@ -51,18 +51,8 @@ export class IndexedDBFinancialService implements IFinancialService {
   async getFinancialSummary(): Promise<FarmFinancialSummary> {
     const expenses = await db.expenses.toArray();
     const yields = await db.yields.toArray();
-    const operations = await db.operations.toArray();
 
-    // Sum explicit expenses + operation costs
-    let totalExpensesInr = expenses.reduce((sum, e) => sum + (e.amountInr || 0), 0);
-    const completedOpCosts = operations
-      .filter(op => op.status === 'Completed')
-      .reduce((sum, op) => sum + (op.costInr || 0), 0);
-    
-    // Combine operation costs with expenses if not duplicated
-    // For aggregate financial summary, let's sum expenses + operational costs
-    totalExpensesInr += completedOpCosts;
-
+    const totalExpensesInr = expenses.reduce((sum, e) => sum + (e.amountInr || 0), 0);
     const totalRevenueInr = yields.reduce((sum, y) => sum + (y.totalRevenueInr || 0), 0);
     const netProfitInr = totalRevenueInr - totalExpensesInr;
     const roiPercentage = totalExpensesInr > 0 ? (netProfitInr / totalExpensesInr) * 100 : 0;
@@ -72,9 +62,6 @@ export class IndexedDBFinancialService implements IFinancialService {
     for (const exp of expenses) {
       const cat = exp.category || 'Miscellaneous';
       categoryMap.set(cat, (categoryMap.get(cat) || 0) + (exp.amountInr || 0));
-    }
-    if (completedOpCosts > 0) {
-      categoryMap.set('Field Operations', (categoryMap.get('Field Operations') || 0) + completedOpCosts);
     }
 
     const expensesByCategory = Array.from(categoryMap.entries()).map(([category, amount]) => ({

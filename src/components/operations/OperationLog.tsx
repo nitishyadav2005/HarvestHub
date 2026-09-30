@@ -137,6 +137,7 @@ export const OperationLog: React.FC<OperationLogProps> = ({
             <option value="All">All Statuses</option>
             <option value="Scheduled">Scheduled</option>
             <option value="In Progress">In Progress</option>
+            <option value="Delayed">Delayed</option>
             <option value="Completed">Completed</option>
           </select>
         </div>

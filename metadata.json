@@ -1,0 +1,8 @@
+{
+  "name": "HarvestHub",
+  "description": "Comprehensive farm management platform for field operations, crop rotation planning, yield tracking, and farm financial management.",
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ],
+  "permissions": []
+}

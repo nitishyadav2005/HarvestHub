@@ -32,10 +32,11 @@ export type OperationType =
   | 'Fertilization' 
   | 'Pest Control' 
   | 'Weeding' 
+  | 'Weed Control' 
   | 'Harvesting' 
   | 'Post-Harvest Handling';
 
-export type OperationStatus = 'Scheduled' | 'In Progress' | 'Completed' | 'Cancelled';
+export type OperationStatus = 'Scheduled' | 'In Progress' | 'Completed' | 'Delayed' | 'Cancelled';
 
 export type ExpenseCategory = 
   | 'Seeds' 
@@ -116,6 +117,7 @@ export interface FieldOperation {
   id?: number;
   fieldId: number;
   fieldName: string;
+  cropName?: string;
   operationType: OperationType;
   title: string;
   operationDate: string;
@@ -181,3 +183,76 @@ export interface FarmFinancialSummary {
     yieldQuintals: number;
   }[];
 }
+
+// Equipment & Maintenance Module
+export type EquipmentStatus = 
+  | 'Operational' 
+  | 'Under Maintenance' 
+  | 'Needs Attention' 
+  | 'In Storage';
+
+export type MaintenanceStatus = 
+  | 'Upcoming' 
+  | 'Due Soon' 
+  | 'Overdue' 
+  | 'Completed';
+
+export interface Equipment {
+  id?: number;
+  name: string; // e.g. Mahindra Tractor
+  type: string; // e.g. Tractor, Water Pump, Seed Drill, Sprayer
+  model: string;
+  purchaseDate: string;
+  status: EquipmentStatus;
+  lastMaintenanceDate: string;
+  nextMaintenanceDate: string;
+  maintenanceIntervalDays: number;
+  maintenanceCostInr: number;
+  notes?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface MaintenanceRecord {
+  id?: number;
+  equipmentId: number;
+  equipmentName: string;
+  maintenanceTask: string;
+  scheduledDate: string;
+  completedDate?: string;
+  status: MaintenanceStatus;
+  costInr: number;
+  serviceProvider?: string;
+  notes?: string;
+  createdAt?: string;
+}
+
+export function calculateMaintenanceStatus(
+  scheduledDate: string,
+  currentStatus?: MaintenanceStatus,
+  completedDate?: string
+): MaintenanceStatus {
+  if (currentStatus === 'Completed' || completedDate) {
+    return 'Completed';
+  }
+  
+  if (!scheduledDate) return 'Upcoming';
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const target = new Date(scheduledDate);
+  target.setHours(0, 0, 0, 0);
+
+  const diffTime = target.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) {
+    return 'Overdue';
+  } else if (diffDays <= 7) {
+    return 'Due Soon';
+  } else {
+    return 'Upcoming';
+  }
+}
+

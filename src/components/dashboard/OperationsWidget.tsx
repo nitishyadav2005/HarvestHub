@@ -50,11 +50,32 @@ export const OperationsWidget: React.FC<OperationsWidgetProps> = ({
             >
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <Badge variant="green" size="sm">
+                  <Badge
+                    variant={
+                      op.status === 'Completed'
+                        ? 'green'
+                        : op.status === 'In Progress'
+                        ? 'blue'
+                        : op.status === 'Delayed'
+                        ? 'red'
+                        : 'green'
+                    }
+                    size="sm"
+                  >
                     {op.operationType}
                   </Badge>
+                  {op.status === 'Delayed' && (
+                    <Badge variant="red" size="sm">
+                      Delayed
+                    </Badge>
+                  )}
+                  {op.status === 'In Progress' && (
+                    <Badge variant="blue" size="sm">
+                      In Progress
+                    </Badge>
+                  )}
                   <span className="text-xs font-semibold text-emerald-900 truncate">
-                    {op.fieldName}
+                    {op.fieldName} {op.cropName ? `• ${op.cropName}` : ''}
                   </span>
                 </div>
                 <h4 className="text-sm font-bold text-gray-900 truncate">{op.title}</h4>

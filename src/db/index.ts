@@ -1,5 +1,14 @@
 import Dexie, { type Table } from 'dexie';
-import type { Field, Crop, CropRotation, FieldOperation, Expense, YieldRecord } from '../types';
+import type { 
+  Field, 
+  Crop, 
+  CropRotation, 
+  FieldOperation, 
+  Expense, 
+  YieldRecord,
+  Equipment,
+  MaintenanceRecord
+} from '../types';
 
 export class HarvestHubDatabase extends Dexie {
   fields!: Table<Field>;
@@ -8,6 +17,8 @@ export class HarvestHubDatabase extends Dexie {
   operations!: Table<FieldOperation>;
   expenses!: Table<Expense>;
   yields!: Table<YieldRecord>;
+  equipment!: Table<Equipment>;
+  maintenance!: Table<MaintenanceRecord>;
 
   constructor() {
     super('HarvestHubDB');
@@ -18,6 +29,10 @@ export class HarvestHubDatabase extends Dexie {
       operations: '++id, fieldId, operationType, status, operationDate',
       expenses: '++id, fieldId, category, date',
       yields: '++id, fieldId, cropName, harvestDate'
+    });
+    this.version(2).stores({
+      equipment: '++id, name, type, status, nextMaintenanceDate',
+      maintenance: '++id, equipmentId, scheduledDate, status'
     });
   }
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   LayoutDashboard,
   Grid,
@@ -6,19 +6,25 @@ import {
   ClipboardList,
   IndianRupee,
   Leaf,
-  Info
+  Info,
+  Wrench,
+  X
 } from 'lucide-react';
 
 interface SidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   onOpenSystemInfo: () => void;
+  isMobileOpen?: boolean;
+  onCloseMobile?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   setActiveTab,
-  onOpenSystemInfo
+  onOpenSystemInfo,
+  isMobileOpen = false,
+  onCloseMobile
 }) => {
   const navItems = [
     {
@@ -50,71 +56,136 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Cost & Yield',
       subtitle: 'Expenses & Revenue',
       icon: IndianRupee
+    },
+    {
+      id: 'equipment',
+      label: 'Equipment',
+      subtitle: 'Maintenance & Service',
+      icon: Wrench
     }
   ];
 
-  return (
-    <aside className="hidden lg:flex flex-col w-64 p-4 shrink-0">
-      <div className="clay-card p-3 flex flex-col gap-1.5 h-full border border-emerald-100">
-        <div className="px-3 py-2 border-b border-emerald-100 mb-1">
-          <span className="text-[11px] font-bold tracking-wider text-emerald-800 uppercase flex items-center gap-1.5">
-            <Leaf className="w-3.5 h-3.5 text-[#2d6a4f]" /> Farm Modules
-          </span>
-        </div>
+  // Close on Escape key when mobile sidebar is open
+  useEffect(() => {
+    if (!isMobileOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && onCloseMobile) {
+        onCloseMobile();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isMobileOpen, onCloseMobile]);
 
-        <nav className="flex flex-col gap-1.5 flex-1">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-left transition-all duration-200 ${
+  const handleNavClick = (tabId: string) => {
+    setActiveTab(tabId);
+    if (onCloseMobile) {
+      onCloseMobile();
+    }
+  };
+
+  const renderNavContent = (isMobile = false) => (
+    <div className="clay-card p-3.5 flex flex-col gap-2 border border-emerald-100/80 shadow-md">
+      {/* Title & Close Header */}
+      <div className="px-3 py-2 border-b border-emerald-100 flex items-center justify-between mb-1">
+        <span className="text-[11px] font-bold tracking-wider text-emerald-800 uppercase flex items-center gap-1.5">
+          <Leaf className="w-3.5 h-3.5 text-[#2d6a4f]" /> Farm Modules
+        </span>
+        {isMobile && onCloseMobile && (
+          <button
+            type="button"
+            onClick={onCloseMobile}
+            className="p-1 rounded-lg text-emerald-800 hover:bg-emerald-100 transition-colors"
+            title="Close menu"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+
+      {/* Nav List */}
+      <nav className="flex flex-col gap-1.5">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = activeTab === item.id;
+          return (
+            <button
+              type="button"
+              key={item.id}
+              onClick={() => handleNavClick(item.id)}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-left transition-all duration-200 cursor-pointer ${
+                isActive
+                  ? 'bg-gradient-to-r from-[#2d6a4f] to-[#1b4332] text-white shadow-md shadow-emerald-900/20 font-semibold scale-[1.01]'
+                  : 'text-emerald-950 hover:bg-emerald-100/70 font-medium'
+              }`}
+            >
+              <div
+                className={`p-2 rounded-xl flex items-center justify-center shrink-0 ${
                   isActive
-                    ? 'bg-gradient-to-r from-[#2d6a4f] to-[#1b4332] text-white shadow-md shadow-emerald-900/20 font-semibold scale-[1.02]'
-                    : 'text-emerald-950 hover:bg-emerald-100/60 font-medium'
+                    ? 'bg-white/20 text-white'
+                    : 'bg-[#d8f3dc]/70 text-[#1b4332]'
                 }`}
               >
+                <Icon className="w-4 h-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-sm leading-snug truncate font-bold">{item.label}</div>
                 <div
-                  className={`p-2 rounded-xl flex items-center justify-center ${
-                    isActive
-                      ? 'bg-white/20 text-white'
-                      : 'bg-[#d8f3dc]/70 text-[#1b4332]'
+                  className={`text-[11px] font-normal truncate ${
+                    isActive ? 'text-emerald-200' : 'text-emerald-700/80'
                   }`}
                 >
-                  <Icon className="w-5 h-5" />
+                  {item.subtitle}
                 </div>
-                <div>
-                  <div className="text-sm leading-snug">{item.label}</div>
-                  <div
-                    className={`text-[11px] font-normal ${
-                      isActive ? 'text-emerald-200' : 'text-emerald-700/80'
-                    }`}
-                  >
-                    {item.subtitle}
-                  </div>
-                </div>
-              </button>
-            );
-          })}
-        </nav>
+              </div>
+            </button>
+          );
+        })}
+      </nav>
 
-        {/* Bottom Spring Boot Architecture Box */}
-        <div className="mt-auto pt-3 border-t border-emerald-100">
-          <div
-            onClick={onOpenSystemInfo}
-            className="p-3.5 rounded-2xl bg-gradient-to-br from-[#e8f5e9] to-[#d8f3dc] border border-emerald-300/60 cursor-pointer hover:shadow-md transition-all text-xs"
-          >
-            <div className="flex items-center gap-1.5 font-bold text-[#1b4332] mb-1">
-              <Info className="w-4 h-4 text-[#2d6a4f]" /> Spring Boot Ready
-            </div>
-            <p className="text-[11px] text-emerald-800 leading-tight">
-              Abstracted Service Layer ready for Java Spring Boot REST API integration.
-            </p>
+      {/* Bottom Farm Journal Information & Backup */}
+      <div className="pt-3 border-t border-emerald-100 mt-1">
+        <div
+          onClick={() => {
+            onOpenSystemInfo();
+            if (isMobile && onCloseMobile) onCloseMobile();
+          }}
+          className="p-3 rounded-2xl bg-gradient-to-br from-[#e8f5e9] to-[#d8f3dc] border border-emerald-300/60 cursor-pointer hover:shadow-md transition-all text-xs group"
+        >
+          <div className="flex items-center gap-1.5 font-bold text-[#1b4332] mb-0.5">
+            <Info className="w-4 h-4 text-[#2d6a4f] group-hover:scale-110 transition-transform" /> Green Valley Farm
           </div>
+          <p className="text-[11px] text-emerald-800 leading-tight">
+            Local offline farm journal. Tap for data backup & storage info.
+          </p>
         </div>
       </div>
-    </aside>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Desktop Sticky Sidebar */}
+      <aside className="hidden lg:flex flex-col w-64 shrink-0 self-start sticky top-[4.75rem] max-h-[calc(100vh-5.5rem)] overflow-y-auto">
+        {renderNavContent(false)}
+      </aside>
+
+      {/* Mobile & Tablet Slide-over Drawer */}
+      {isMobileOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden flex">
+          {/* Backdrop Overlay */}
+          <div
+            className="fixed inset-0 bg-emerald-950/40 backdrop-blur-xs transition-opacity"
+            onClick={onCloseMobile}
+            aria-hidden="true"
+          />
+
+          {/* Drawer Content */}
+          <div className="relative w-72 max-w-[85vw] p-4 bg-[#f2f6f3] shadow-2xl flex flex-col z-10 overflow-y-auto">
+            {renderNavContent(true)}
+          </div>
+        </div>
+      )}
+    </>
   );
 };

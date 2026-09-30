@@ -1,8 +1,14 @@
-import React from 'react';
-import type { Field, FieldOperation, FarmFinancialSummary } from '../../types';
+import type { 
+  Field, 
+  FieldOperation, 
+  FarmFinancialSummary,
+  Equipment,
+  MaintenanceRecord
+} from '../../types';
 import { WeatherJournalCard } from './WeatherJournalCard';
 import { OperationsWidget } from './OperationsWidget';
 import { FinancialSummaryWidget } from './FinancialSummaryWidget';
+import { EquipmentMaintenanceWidget } from './EquipmentMaintenanceWidget';
 import { ClayCard } from '../common/ClayCard';
 import { Badge } from '../common/Badge';
 import { Sprout, LandPlot, AlertCircle, ArrowUpRight, Plus, Calendar } from 'lucide-react';
@@ -11,8 +17,11 @@ interface DashboardOverviewProps {
   fields: Field[];
   operations: FieldOperation[];
   financialSummary: FarmFinancialSummary;
+  equipments: Equipment[];
+  maintenanceRecords: MaintenanceRecord[];
   onNavigate: (tab: string) => void;
   onCompleteOperation: (id: number) => void;
+  onCompleteMaintenance: (id: number) => void;
   onSelectField: (field: Field) => void;
   onOpenAddField: () => void;
 }
@@ -21,8 +30,11 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   fields,
   operations,
   financialSummary,
+  equipments,
+  maintenanceRecords,
   onNavigate,
   onCompleteOperation,
+  onCompleteMaintenance,
   onSelectField,
   onOpenAddField
 }) => {
@@ -115,8 +127,8 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-[#1b4332]">Digital Farm Journal - Active Fields</h2>
-            <p className="text-xs text-emerald-800/80">Real-time status of your crops and soil profiles</p>
+            <h2 className="text-xl font-bold text-[#1b4332]">Green Valley Farm — Active Plots</h2>
+            <p className="text-xs text-emerald-800/80">Real-time status of crops, soil profiles and cultivation schedules</p>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -189,18 +201,26 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
         </div>
       </div>
 
-      {/* Split Widgets: Operations & Financials */}
+      {/* Split Widgets: Operations & Equipment Maintenance */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <OperationsWidget
           operations={operations}
           onCompleteOp={onCompleteOperation}
           onNavigateToOperations={() => onNavigate('operations')}
         />
-        <FinancialSummaryWidget
-          summary={financialSummary}
-          onNavigateToFinances={() => onNavigate('finances')}
+        <EquipmentMaintenanceWidget
+          equipments={equipments}
+          maintenanceRecords={maintenanceRecords}
+          onCompleteMaintenance={onCompleteMaintenance}
+          onNavigateToEquipment={() => onNavigate('equipment')}
         />
       </div>
+
+      {/* Farm Financial Performance Overview */}
+      <FinancialSummaryWidget
+        summary={financialSummary}
+        onNavigateToFinances={() => onNavigate('finances')}
+      />
     </div>
   );
 };

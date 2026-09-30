@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import { Modal } from '../common/Modal';
 import { db } from '../../db';
-import { Database, Layers, Download, Upload, CheckCircle2, Server, Code } from 'lucide-react';
+import { Database, Layers, Download, Upload, CheckCircle2, ShieldCheck, RefreshCw } from 'lucide-react';
 
 interface SystemInfoModalProps {
   isOpen: boolean;
   onClose: () => void;
   onRefreshData: () => void;
+  onResetSeedData?: () => void;
 }
 
 export const SystemInfoModal: React.FC<SystemInfoModalProps> = ({
   isOpen,
   onClose,
-  onRefreshData
+  onRefreshData,
+  onResetSeedData
 }) => {
   const [importStatus, setImportStatus] = useState<string | null>(null);
 
@@ -24,6 +26,8 @@ export const SystemInfoModal: React.FC<SystemInfoModalProps> = ({
       operations: await db.operations.toArray(),
       expenses: await db.expenses.toArray(),
       yields: await db.yields.toArray(),
+      equipment: await db.equipment.toArray(),
+      maintenance: await db.maintenance.toArray(),
       exportedAt: new Date().toISOString()
     };
 
@@ -48,7 +52,16 @@ export const SystemInfoModal: React.FC<SystemInfoModalProps> = ({
           if (parsed.fields && parsed.crops) {
             await db.transaction(
               'rw',
-              [db.fields, db.crops, db.cropRotations, db.operations, db.expenses, db.yields],
+              [
+                db.fields,
+                db.crops,
+                db.cropRotations,
+                db.operations,
+                db.expenses,
+                db.yields,
+                db.equipment,
+                db.maintenance
+              ],
               async () => {
                 await db.fields.clear();
                 await db.crops.clear();
@@ -56,6 +69,8 @@ export const SystemInfoModal: React.FC<SystemInfoModalProps> = ({
                 await db.operations.clear();
                 await db.expenses.clear();
                 await db.yields.clear();
+                await db.equipment.clear();
+                await db.maintenance.clear();
 
                 await db.fields.bulkAdd(parsed.fields);
                 await db.crops.bulkAdd(parsed.crops);
@@ -63,6 +78,8 @@ export const SystemInfoModal: React.FC<SystemInfoModalProps> = ({
                 if (parsed.operations) await db.operations.bulkAdd(parsed.operations);
                 if (parsed.expenses) await db.expenses.bulkAdd(parsed.expenses);
                 if (parsed.yields) await db.yields.bulkAdd(parsed.yields);
+                if (parsed.equipment) await db.equipment.bulkAdd(parsed.equipment);
+                if (parsed.maintenance) await db.maintenance.bulkAdd(parsed.maintenance);
               }
             );
             setImportStatus('Data imported successfully into IndexedDB!');
@@ -71,6 +88,7 @@ export const SystemInfoModal: React.FC<SystemInfoModalProps> = ({
             setImportStatus('Invalid JSON backup file structure.');
           }
         } catch (err) {
+          console.error('Import error:', err);
           setImportStatus('Failed to parse JSON file.');
         }
       };
@@ -81,8 +99,8 @@ export const SystemInfoModal: React.FC<SystemInfoModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="System Architecture & Storage Specs"
-      subtitle="IndexedDB local database metrics & Spring Boot REST API readiness"
+      title="Farm Journal Data & Storage"
+      subtitle="Green Valley Farm local IndexedDB database metrics & backup management"
       maxWidth="2xl"
     >
       <div className="space-y-6 text-xs text-emerald-950">
@@ -100,7 +118,7 @@ export const SystemInfoModal: React.FC<SystemInfoModalProps> = ({
                 </span>
               </div>
               <p className="text-xs text-emerald-800 mt-0.5">
-                Client-side transactional database storing all farm records persistently.
+                Client-side transactional database storing all Green Valley Farm records persistently.
               </p>
             </div>
           </div>
@@ -112,14 +130,16 @@ export const SystemInfoModal: React.FC<SystemInfoModalProps> = ({
             <Layers className="w-4 h-4 text-[#2d6a4f]" /> Active Object Stores
           </h4>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {[
-              { name: 'fields', desc: 'Plot size, soil & crop' },
-              { name: 'crops', desc: 'Master crop catalog' },
-              { name: 'cropRotations', desc: 'Sequence & N balance' },
+              { name: 'fields', desc: '4 registered farm plots' },
+              { name: 'crops', desc: 'Active crop varieties' },
+              { name: 'cropRotations', desc: 'Soil & crop sequences' },
               { name: 'operations', desc: 'Sowing, spray & harvest' },
-              { name: 'expenses', desc: 'Input costs & wages' },
-              { name: 'yields', desc: 'Harvest sales & Mandi revenue' }
+              { name: 'expenses', desc: 'Financial expense ledger' },
+              { name: 'yields', desc: 'Harvest sales & revenue' },
+              { name: 'equipment', desc: 'Machinery fleet catalog' },
+              { name: 'maintenance', desc: 'Equipment service logs' }
             ].map((store) => (
               <div key={store.name} className="p-2.5 rounded-xl bg-white border border-emerald-100">
                 <div className="font-bold text-[#1b4332] text-xs font-mono">{store.name}</div>
@@ -129,25 +149,25 @@ export const SystemInfoModal: React.FC<SystemInfoModalProps> = ({
           </div>
         </div>
 
-        {/* Spring Boot Integration Roadmap Card */}
+        {/* Offline Farm Journal Architecture Card */}
         <div className="p-4 rounded-2xl bg-white border border-emerald-200 space-y-2.5">
           <div className="flex items-center gap-2 font-bold text-sm text-[#1b4332]">
-            <Server className="w-4 h-4 text-[#2d6a4f]" /> Future Java / Spring Boot Backend Integration
+            <ShieldCheck className="w-4 h-4 text-[#2d6a4f]" /> Offline-First Farm Journal & Data Privacy
           </div>
           <p className="text-xs text-emerald-900 leading-relaxed">
-            The frontend application is built using a clean <strong className="text-[#1b4332]">Repository Service Pattern</strong> (<code className="bg-emerald-100 px-1 rounded">IFieldService</code>, <code className="bg-emerald-100 px-1 rounded">ICropService</code>, etc.).
+            HarvestHub operates entirely on-device using high-performance <strong className="text-[#1b4332]">IndexedDB</strong> storage. All Green Valley Farm plot measurements, crop schedules, field operations, financials, and equipment service logs remain private and persistent in your browser without requiring an active internet connection.
           </p>
-          <div className="p-3 rounded-xl bg-[#f8faf8] border border-emerald-100 font-mono text-[11px] text-emerald-900 space-y-1">
+          <div className="p-3 rounded-xl bg-[#f8faf8] border border-emerald-100 text-[11px] text-emerald-900 space-y-1">
             <div className="flex items-center gap-1.5 text-emerald-800 font-bold">
-              <Code className="w-3.5 h-3.5 text-[#2d6a4f]" /> Modular Abstraction Mapping:
+              • Complete offline field logging capability
             </div>
-            <div>• <strong className="text-[#1b4332]">Frontend Interface:</strong> <span className="text-emerald-700">src/services/fieldService.ts</span></div>
-            <div>• <strong className="text-[#1b4332]">IndexedDB Adapter:</strong> <span className="text-emerald-700">IndexedDBFieldService (Dexie)</span></div>
-            <div>• <strong className="text-[#1b4332]">Spring Boot Adapter:</strong> <span className="text-[#2d6a4f]">SpringRestFieldService (Axios / Fetch to /api/v1/fields)</span></div>
+            <div className="flex items-center gap-1.5 text-emerald-800 font-bold">
+              • Instant transactional data reads and writes
+            </div>
+            <div className="flex items-center gap-1.5 text-emerald-800 font-bold">
+              • Full JSON backup and restore support
+            </div>
           </div>
-          <p className="text-[11px] text-emerald-800">
-            Swapping from local IndexedDB to a Spring Boot backend only requires creating the REST adapter class and changing 1 export in the service layer!
-          </p>
         </div>
 
         {/* JSON Export / Import Actions */}
@@ -157,7 +177,21 @@ export const SystemInfoModal: React.FC<SystemInfoModalProps> = ({
             <p className="text-[11px] text-emerald-800">Export IndexedDB stores as JSON file or import a backup.</p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {onResetSeedData && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onResetSeedData();
+                }}
+                className="px-3 py-1.5 rounded-xl bg-white hover:bg-emerald-50 text-[#1b4332] border border-emerald-300 text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
+                title="Populate 4 consistent test datasets across all modules"
+              >
+                <RefreshCw className="w-3.5 h-3.5 text-[#2d6a4f]" /> Seed 4 Test Records
+              </button>
+            )}
+
             <button
               onClick={handleExportJSON}
               className="clay-btn-secondary text-xs py-1.5 px-3"

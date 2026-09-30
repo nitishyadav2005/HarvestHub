@@ -18,6 +18,7 @@ const OPERATION_TYPES: OperationType[] = [
   'Fertilization',
   'Pest Control',
   'Weeding',
+  'Weed Control',
   'Harvesting',
   'Post-Harvest Handling'
 ];
@@ -80,9 +81,12 @@ export const OperationFormModal: React.FC<OperationFormModalProps> = ({
     e.preventDefault();
     if (!title.trim()) return;
 
+    const matchedField = fields.find((f) => f.id === Number(fieldId));
+
     onSubmit({
       fieldId: Number(fieldId),
       fieldName,
+      cropName: matchedField?.currentCropName || initialData?.cropName,
       operationType,
       title,
       operationDate,
@@ -183,6 +187,7 @@ export const OperationFormModal: React.FC<OperationFormModalProps> = ({
             >
               <option value="Scheduled">Scheduled</option>
               <option value="In Progress">In Progress</option>
+              <option value="Delayed">Delayed</option>
               <option value="Completed">Completed</option>
               <option value="Cancelled">Cancelled</option>
             </select>

@@ -7,7 +7,7 @@ export function getFarmWeather(): FarmWeather {
     humidityPercent: 68,
     rainfallChancePercent: 20,
     windSpeedKmh: 12,
-    location: 'North & Central India Agri Belt',
-    advisoryTip: 'Optimal atmospheric humidity for Rabi crop field preparation and neem fertigation. Good window for morning spraying.'
+    location: 'Green Valley Farm, Karnal Belt',
+    advisoryTip: 'Optimal morning humidity for wheat CRI irrigation and mustard fertigation on Green Valley Plot A and North Field. Favorable window for pest scouting.'
   };
 }
