@@ -164,9 +164,13 @@ export interface YieldRecord {
   fieldId: number;
   fieldName: string;
   cropName: string;
+  cropId?: number; // Compatibility alias
   harvestDate: string;
   quantityQuintals: number;
+  quantity?: number; // Compatibility alias for quantityQuintals
+  unit?: string; // Compatibility alias
   pricePerQuintalInr: number;
+  sellingPrice?: number; // Compatibility alias for pricePerQuintalInr
   totalRevenueInr: number;
   buyerName?: string; // e.g. APMC Khanna Mandi, Local Trader
   qualityGrade: YieldQualityGrade;
@@ -186,19 +190,37 @@ export interface FarmWeather {
 }
 
 // Financial Analytics Summary Interface
+export interface ExpenseCategorySummary {
+  category: string;
+  amount: number;
+  // Compatibility aliases
+  name?: string;
+  value?: number;
+}
+
+export interface CropProfitabilitySummary {
+  cropName: string;
+  totalCost: number;
+  totalRevenue: number;
+  profit: number;
+  yieldQuintals: number;
+  // Compatibility aliases
+  name?: string;
+  crop?: string;
+  revenue?: number;
+  Revenue?: number;
+  cost?: number;
+  Cost?: number;
+  Profit?: number;
+}
+
 export interface FarmFinancialSummary {
   totalExpensesInr: number;
   totalRevenueInr: number;
   netProfitInr: number;
   roiPercentage: number;
-  expensesByCategory: { category: string; amount: number }[];
-  cropWiseProfitability: {
-    cropName: string;
-    totalCost: number;
-    totalRevenue: number;
-    profit: number;
-    yieldQuintals: number;
-  }[];
+  expensesByCategory: ExpenseCategorySummary[];
+  cropWiseProfitability: CropProfitabilitySummary[];
 }
 
 // Equipment & Maintenance Module

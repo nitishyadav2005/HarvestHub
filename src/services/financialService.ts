@@ -87,7 +87,9 @@ export class IndexedDBFinancialService implements IFinancialService {
 
     const expensesByCategory = Array.from(categoryMap.entries()).map(([category, amount]) => ({
       category,
-      amount
+      amount,
+      name: category,
+      value: amount
     }));
 
     // Crop-wise Profitability
@@ -124,13 +126,24 @@ export class IndexedDBFinancialService implements IFinancialService {
       cropMap.set(cropName, existing);
     }
 
-    const cropWiseProfitability = Array.from(cropMap.entries()).map(([cropName, val]) => ({
-      cropName,
-      totalCost: val.totalCost,
-      totalRevenue: val.totalRevenue,
-      profit: val.totalRevenue - val.totalCost,
-      yieldQuintals: val.yieldQuintals
-    }));
+    const cropWiseProfitability = Array.from(cropMap.entries()).map(([cropName, val]) => {
+      const profit = val.totalRevenue - val.totalCost;
+      return {
+        cropName,
+        totalCost: val.totalCost,
+        totalRevenue: val.totalRevenue,
+        profit,
+        yieldQuintals: val.yieldQuintals,
+        // Compatibility properties
+        name: cropName,
+        crop: cropName,
+        revenue: val.totalRevenue,
+        Revenue: val.totalRevenue,
+        cost: val.totalCost,
+        Cost: val.totalCost,
+        Profit: profit
+      };
+    });
 
     return {
       totalExpensesInr,
