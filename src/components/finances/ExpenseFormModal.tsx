@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import type { Field, Expense, CanonicalExpenseCategory } from '../../types';
+import type { Field, Expense, ExpenseCategory } from '../../types';
 import { Modal } from '../common/Modal';
-import { Check, AlertCircle } from 'lucide-react';
-import { formatINR, cleanNumber, isValidNonNegative } from '../../utils/currency';
+import { Check } from 'lucide-react';
 
 interface ExpenseFormModalProps {
   isOpen: boolean;
@@ -12,16 +11,15 @@ interface ExpenseFormModalProps {
   initialData?: Expense | null;
 }
 
-// Canonical supported expense categories as required
-const SUPPORTED_EXPENSE_CATEGORIES: CanonicalExpenseCategory[] = [
+const EXPENSE_CATEGORIES: ExpenseCategory[] = [
   'Seeds',
-  'Fertilizer',
-  'Pesticides',
-  'Labour',
-  'Irrigation',
-  'Fuel',
-  'Equipment',
-  'Other'
+  'Fertilizers',
+  'Pesticides & Chemicals',
+  'Labor & Wages',
+  'Machinery & Fuel',
+  'Irrigation & Electricity',
+  'Transportation & Mandi Fee',
+  'Miscellaneous'
 ];
 
 export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
@@ -33,39 +31,23 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
 }) => {
   const [fieldId, setFieldId] = useState<number>(fields[0]?.id || 1);
   const [fieldName, setFieldName] = useState(fields[0]?.name || '');
-  const [category, setCategory] = useState<CanonicalExpenseCategory>('Fertilizer');
+  const [category, setCategory] = useState<ExpenseCategory>('Fertilizers');
   const [description, setDescription] = useState('');
-  const [amountStr, setAmountStr] = useState<string>('3800');
+  const [amountInr, setAmountInr] = useState<number>(4500);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [paymentMethod, setPaymentMethod] = useState<'Cash' | 'UPI' | 'Bank Transfer' | 'Credit / Udhar'>('UPI');
   const [receiptNumber, setReceiptNumber] = useState('');
   const [notes, setNotes] = useState('');
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  // Map legacy category to canonical
-  const toCanonicalCategory = (cat: string): CanonicalExpenseCategory => {
-    const l = (cat || '').toLowerCase();
-    if (l.includes('seed')) return 'Seeds';
-    if (l.includes('fertil')) return 'Fertilizer';
-    if (l.includes('pesticide') || l.includes('chemical')) return 'Pesticides';
-    if (l.includes('labor') || l.includes('labour') || l.includes('wage')) return 'Labour';
-    if (l.includes('irrig') || l.includes('water') || l.includes('electric')) return 'Irrigation';
-    if (l.includes('fuel') || l.includes('diesel')) return 'Fuel';
-    if (l.includes('machin') || l.includes('equip') || l.includes('tractor')) return 'Equipment';
-    return 'Other';
-  };
 
   useEffect(() => {
-    setErrorMessage(null);
     if (initialData) {
       setFieldId(initialData.fieldId);
       setFieldName(initialData.fieldName);
-      setCategory(toCanonicalCategory(initialData.category));
+      setCategory(initialData.category);
       setDescription(initialData.description);
-      const amt = initialData.amount ?? initialData.amountInr ?? 0;
-      setAmountStr(amt.toString());
+      setAmountInr(initialData.amountInr ?? initialData.amount ?? 0);
       setDate(initialData.date);
-      setPaymentMethod(initialData.paymentMethod || 'UPI');
+      setPaymentMethod(initialData.paymentMethod);
       setReceiptNumber(initialData.receiptNumber || '');
       setNotes(initialData.notes || '');
     } else {
@@ -73,9 +55,9 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
         setFieldId(fields[0].id || 1);
         setFieldName(fields[0].name);
       }
-      setCategory('Fertilizer');
-      setDescription('DAP Fertilizer (2 Bags) & Micronutrients');
-      setAmountStr('3800');
+      setCategory('Fertilizers');
+      setDescription('DAP Fertilizers (2 Bags) & Micronutrients');
+      setAmountInr(3800);
       setDate(new Date().toISOString().split('T')[0]);
       setPaymentMethod('UPI');
       setReceiptNumber(`REC-${Math.floor(1000 + Math.random() * 9000)}`);
@@ -89,39 +71,21 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
     if (f) setFieldName(f.name);
   };
 
-  const parsedAmount = cleanNumber(parseFloat(amountStr));
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMessage(null);
-
-    if (!description.trim()) {
-      setErrorMessage('Description is required.');
-      return;
-    }
-
-    if (!isValidNonNegative(amountStr) || parseFloat(amountStr) < 0) {
-      setErrorMessage('Amount must be a valid non-negative number (>= ₹0).');
-      return;
-    }
-
-    const finalAmount = Number(parseFloat(amountStr).toFixed(2));
-
-    const selectedField = fields.find((f) => f.id === Number(fieldId));
+    if (!description.trim()) return;
 
     onSubmit({
       fieldId: Number(fieldId),
       fieldName,
-      cropId: selectedField?.currentCropId,
-      cropName: selectedField?.currentCropName,
       category,
-      description: description.trim(),
-      amount: finalAmount,
-      amountInr: finalAmount,
+      description,
+      amountInr: Number(amountInr),
+      amount: Number(amountInr),
       date,
       paymentMethod,
-      receiptNumber: receiptNumber.trim(),
-      notes: notes.trim()
+      receiptNumber,
+      notes
     });
 
     onClose();
@@ -132,16 +96,9 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={initialData ? 'Edit Expense Entry' : 'Log Farm Expense'}
-      subtitle="Track inputs, labor, seeds, machinery, and irrigation costs"
+      subtitle="Track inputs, labor, seeds, machinery, and power costs"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
-        {errorMessage && (
-          <div className="p-3 rounded-2xl bg-red-50 border border-red-200 flex items-center gap-2 text-xs font-semibold text-red-800 animate-fadeIn">
-            <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
-            <span>{errorMessage}</span>
-          </div>
-        )}
-
         {/* Field & Category */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
@@ -167,10 +124,10 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
             </label>
             <select
               value={category}
-              onChange={(e) => setCategory(e.target.value as CanonicalExpenseCategory)}
+              onChange={(e) => setCategory(e.target.value as ExpenseCategory)}
               className="w-full clay-inset-white px-3.5 py-2 text-sm font-bold text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-xl"
             >
-              {SUPPORTED_EXPENSE_CATEGORIES.map((cat) => (
+              {EXPENSE_CATEGORIES.map((cat) => (
                 <option key={cat} value={cat}>
                   {cat}
                 </option>
@@ -189,10 +146,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
             required
             placeholder="e.g. Certified Seed 50kg & Seed treatment chemical"
             value={description}
-            onChange={(e) => {
-              setDescription(e.target.value);
-              if (errorMessage) setErrorMessage(null);
-            }}
+            onChange={(e) => setDescription(e.target.value)}
             className="w-full clay-inset-white px-3.5 py-2 text-sm font-bold text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-xl"
           />
         </div>
@@ -200,26 +154,16 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
         {/* Amount, Date & Payment Method */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="block text-xs font-bold text-emerald-900">
-                Amount (₹ INR) *
-              </label>
-              <span className="text-[11px] font-mono font-bold text-emerald-800">
-                {formatINR(parsedAmount)}
-              </span>
-            </div>
+            <label className="block text-xs font-bold text-emerald-900 mb-1">
+              Amount (₹ INR) *
+            </label>
             <input
               type="number"
-              min="0"
-              step="any"
+              min="1"
               required
-              placeholder="e.g. 5000"
-              value={amountStr}
-              onChange={(e) => {
-                setAmountStr(e.target.value);
-                if (errorMessage) setErrorMessage(null);
-              }}
-              className="w-full clay-inset-white px-3.5 py-2 text-sm font-bold text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-xl font-mono"
+              value={amountInr}
+              onChange={(e) => setAmountInr(parseFloat(e.target.value) || 0)}
+              className="w-full clay-inset-white px-3.5 py-2 text-sm font-bold text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-xl"
             />
           </div>
 

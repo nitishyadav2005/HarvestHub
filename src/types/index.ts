@@ -48,16 +48,32 @@ export type ExpenseCategory =
   | 'Transportation & Mandi Fee' 
   | 'Miscellaneous';
 
+export type CanonicalExpenseCategory = ExpenseCategory;
+
 export type YieldQualityGrade = 'Grade A (Premium)' | 'Grade B (Standard)' | 'Grade C (Fair)';
 
 // User & Authentication Entities
-export interface User {
-  id?: number;
+export interface UserSession {
+  userId: number;
   fullName: string;
   email: string;
-  password: string;
+  farmName: string;
+  token?: string;
+}
+
+export interface User {
+  id?: number;
+  userId?: number;
+  fullName: string;
+  email: string;
+  password?: string;
   farmName: string;
   createdAt: string;
+  // Compatibility properties for auth responses
+  success?: boolean;
+  message: string;
+  error?: string;
+  session?: UserSession;
 }
 
 // Database Entities
@@ -152,6 +168,8 @@ export interface Expense {
   category: ExpenseCategory;
   description: string;
   amountInr: number;
+  amount?: number; // Compatibility alias for amountInr
+  cropId?: number; // Compatibility alias
   date: string;
   paymentMethod: 'Cash' | 'UPI' | 'Bank Transfer' | 'Credit / Udhar';
   receiptNumber?: string;
@@ -164,9 +182,13 @@ export interface YieldRecord {
   fieldId: number;
   fieldName: string;
   cropName: string;
+  cropId?: number; // Compatibility alias
   harvestDate: string;
   quantityQuintals: number;
+  quantity?: number; // Compatibility alias for quantityQuintals
+  unit?: string; // Compatibility alias
   pricePerQuintalInr: number;
+  sellingPrice?: number; // Compatibility alias for pricePerQuintalInr
   totalRevenueInr: number;
   buyerName?: string; // e.g. APMC Khanna Mandi, Local Trader
   qualityGrade: YieldQualityGrade;
@@ -186,19 +208,42 @@ export interface FarmWeather {
 }
 
 // Financial Analytics Summary Interface
+export interface ExpenseCategorySummary {
+  category: string;
+  amount: number;
+  // Compatibility aliases
+  name?: string;
+  value?: number;
+}
+
+export interface CropProfitabilitySummary {
+  cropName: string;
+  totalCost: number;
+  totalRevenue: number;
+  profit: number;
+  yieldQuintals: number;
+  // Compatibility aliases
+  name?: string;
+  crop?: string;
+  revenue?: number;
+  Revenue?: number;
+  cost?: number;
+  Cost?: number;
+  Profit?: number;
+}
+
 export interface FarmFinancialSummary {
   totalExpensesInr: number;
   totalRevenueInr: number;
   netProfitInr: number;
   roiPercentage: number;
-  expensesByCategory: { category: string; amount: number }[];
-  cropWiseProfitability: {
-    cropName: string;
-    totalCost: number;
-    totalRevenue: number;
-    profit: number;
-    yieldQuintals: number;
-  }[];
+  expensesByCategory: ExpenseCategorySummary[];
+  cropWiseProfitability: CropProfitabilitySummary[];
+  // Compatibility properties
+  totalYieldFormatted?: string;
+  totalExpensesFormatted?: string;
+  totalRevenueFormatted?: string;
+  netProfitFormatted?: string;
 }
 
 // Equipment & Maintenance Module

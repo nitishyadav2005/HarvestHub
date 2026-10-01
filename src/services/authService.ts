@@ -8,10 +8,12 @@ export const DEFAULT_DEMO_USER: Omit<User, 'id'> = {
   email: 'farmer@example.com',
   password: 'password123',
   farmName: 'Green Valley Farm',
-  createdAt: '2026-01-01T08:00:00.000Z'
+  createdAt: '2026-01-01T08:00:00.000Z',
+  message: 'Success'
 };
 
 export interface IAuthService {
+  initAuth(): Promise<User | null>;
   getCurrentUser(): Promise<User | null>;
   getCurrentUserId(): number | null;
   login(email: string, password: string): Promise<User>;
@@ -26,6 +28,11 @@ export interface IAuthService {
 }
 
 export class IndexedDBAuthService implements IAuthService {
+  async initAuth(): Promise<User | null> {
+    await this.ensureDefaultUser();
+    return await this.getCurrentUser();
+  }
+
   getCurrentUserId(): number | null {
     if (typeof window === 'undefined') return null;
     const storedId = localStorage.getItem(SESSION_KEY);
@@ -72,7 +79,20 @@ export class IndexedDBAuthService implements IAuthService {
       localStorage.setItem(SESSION_KEY, String(user.id));
     }
 
-    return user;
+    const session = {
+      userId: user.id || 1,
+      fullName: user.fullName,
+      email: user.email,
+      farmName: user.farmName,
+      token: `session_${user.id}_${Date.now()}`
+    };
+
+    return {
+      ...user,
+      success: true,
+      session,
+      message: 'Logged in successfully.'
+    };
   }
 
   async register(userData: {
@@ -114,7 +134,8 @@ export class IndexedDBAuthService implements IAuthService {
       email,
       password,
       farmName,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      message: 'Account created successfully.'
     };
 
     const id = await db.users.add(newUser as User);
@@ -123,7 +144,20 @@ export class IndexedDBAuthService implements IAuthService {
       throw new Error('Failed to create account. Please try again.');
     }
 
-    return created;
+    const session = {
+      userId: Number(id),
+      fullName: created.fullName,
+      email: created.email,
+      farmName: created.farmName,
+      token: `session_${id}_${Date.now()}`
+    };
+
+    return {
+      ...created,
+      success: true,
+      session,
+      message: 'Account created successfully.'
+    };
   }
 
   async logout(): Promise<void> {

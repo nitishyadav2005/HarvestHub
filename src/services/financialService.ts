@@ -87,7 +87,9 @@ export class IndexedDBFinancialService implements IFinancialService {
 
     const expensesByCategory = Array.from(categoryMap.entries()).map(([category, amount]) => ({
       category,
-      amount
+      amount,
+      name: category,
+      value: amount
     }));
 
     // Crop-wise Profitability
@@ -124,13 +126,26 @@ export class IndexedDBFinancialService implements IFinancialService {
       cropMap.set(cropName, existing);
     }
 
-    const cropWiseProfitability = Array.from(cropMap.entries()).map(([cropName, val]) => ({
-      cropName,
-      totalCost: val.totalCost,
-      totalRevenue: val.totalRevenue,
-      profit: val.totalRevenue - val.totalCost,
-      yieldQuintals: val.yieldQuintals
-    }));
+    const cropWiseProfitability = Array.from(cropMap.entries()).map(([cropName, val]) => {
+      const profit = val.totalRevenue - val.totalCost;
+      return {
+        cropName,
+        totalCost: val.totalCost,
+        totalRevenue: val.totalRevenue,
+        profit,
+        yieldQuintals: val.yieldQuintals,
+        // Compatibility properties
+        name: cropName,
+        crop: cropName,
+        revenue: val.totalRevenue,
+        Revenue: val.totalRevenue,
+        cost: val.totalCost,
+        Cost: val.totalCost,
+        Profit: profit
+      };
+    });
+
+    const totalYieldQuintals = yields.reduce((sum, y) => sum + (y.quantityQuintals || y.quantity || 0), 0);
 
     return {
       totalExpensesInr,
@@ -138,9 +153,79 @@ export class IndexedDBFinancialService implements IFinancialService {
       netProfitInr,
       roiPercentage: Number(roiPercentage.toFixed(1)),
       expensesByCategory,
-      cropWiseProfitability
+      cropWiseProfitability,
+      totalYieldFormatted: `${totalYieldQuintals.toLocaleString('en-IN')} Qtl`,
+      totalExpensesFormatted: `₹${totalExpensesInr.toLocaleString('en-IN')}`,
+      totalRevenueFormatted: `₹${totalRevenueInr.toLocaleString('en-IN')}`,
+      netProfitFormatted: `₹${netProfitInr.toLocaleString('en-IN')}`
     };
   }
 }
 
 export const financialService: IFinancialService = new IndexedDBFinancialService();
+
+// Export computeFinancialSummary compatibility function
+export function computeFinancialSummary(
+  expenses: Expense[],
+  yields: YieldRecord[],
+  _extraParam?: any
+): FarmFinancialSummary {
+  const totalExpensesInr = expenses.reduce((sum, e) => sum + (e.amountInr || e.amount || 0), 0);
+  const totalRevenueInr = yields.reduce((sum, y) => sum + (y.totalRevenueInr || 0), 0);
+  const netProfitInr = totalRevenueInr - totalExpensesInr;
+  const roiPercentage = totalExpensesInr > 0 ? (netProfitInr / totalExpensesInr) * 100 : 0;
+  const totalYieldQuintals = yields.reduce((sum, y) => sum + (y.quantityQuintals || y.quantity || 0), 0);
+
+  const categoryMap = new Map<string, number>();
+  for (const exp of expenses) {
+    const cat = exp.category || 'Miscellaneous';
+    categoryMap.set(cat, (categoryMap.get(cat) || 0) + (exp.amountInr || exp.amount || 0));
+  }
+
+  const expensesByCategory = Array.from(categoryMap.entries()).map(([category, amount]) => ({
+    category,
+    amount,
+    name: category,
+    value: amount
+  }));
+
+  const cropMap = new Map<string, { totalCost: number; totalRevenue: number; yieldQuintals: number }>();
+  for (const y of yields) {
+    const cropName = y.cropName || 'Other Crop';
+    const existing = cropMap.get(cropName) || { totalCost: 0, totalRevenue: 0, yieldQuintals: 0 };
+    existing.totalRevenue += y.totalRevenueInr || 0;
+    existing.yieldQuintals += y.quantityQuintals || y.quantity || 0;
+    cropMap.set(cropName, existing);
+  }
+
+  const cropWiseProfitability = Array.from(cropMap.entries()).map(([cropName, val]) => {
+    const profit = val.totalRevenue - val.totalCost;
+    return {
+      cropName,
+      totalCost: val.totalCost,
+      totalRevenue: val.totalRevenue,
+      profit,
+      yieldQuintals: val.yieldQuintals,
+      name: cropName,
+      crop: cropName,
+      revenue: val.totalRevenue,
+      Revenue: val.totalRevenue,
+      cost: val.totalCost,
+      Cost: val.totalCost,
+      Profit: profit
+    };
+  });
+
+  return {
+    totalExpensesInr,
+    totalRevenueInr,
+    netProfitInr,
+    roiPercentage: Number(roiPercentage.toFixed(1)),
+    expensesByCategory,
+    cropWiseProfitability,
+    totalYieldFormatted: `${totalYieldQuintals.toLocaleString('en-IN')} Qtl`,
+    totalExpensesFormatted: `₹${totalExpensesInr.toLocaleString('en-IN')}`,
+    totalRevenueFormatted: `₹${totalRevenueInr.toLocaleString('en-IN')}`,
+    netProfitFormatted: `₹${netProfitInr.toLocaleString('en-IN')}`
+  };
+}
